@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "github.com/mwopitz/go-daemon/todo";
+
+message AddressRequest {}
+
+message AddressReply {
+  string network = 1;
+  string address = 2;
+}
+
+service TodoService {
+  rpc GetAddress (AddressRequest) returns (AddressReply) {}
+}
