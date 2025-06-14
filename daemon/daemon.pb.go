@@ -117,8 +117,8 @@ const file_daemon_proto_rawDesc = "" +
 	"\x0eAddressRequest\"B\n" +
 	"\fAddressReply\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x18\n" +
-	"\aaddress\x18\x02 \x01(\tR\aaddress2?\n" +
-	"\rDaemonService\x12.\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress28\n" +
+	"\x06Daemon\x12.\n" +
 	"\n" +
 	"GetAddress\x12\x0f.AddressRequest\x1a\r.AddressReply\"\x00B%Z#github.com/mwopitz/go-daemon/daemonb\x06proto3"
 
@@ -140,8 +140,8 @@ var file_daemon_proto_goTypes = []any{
 	(*AddressReply)(nil),   // 1: AddressReply
 }
 var file_daemon_proto_depIdxs = []int32{
-	0, // 0: DaemonService.GetAddress:input_type -> AddressRequest
-	1, // 1: DaemonService.GetAddress:output_type -> AddressReply
+	0, // 0: Daemon.GetAddress:input_type -> AddressRequest
+	1, // 1: Daemon.GetAddress:output_type -> AddressReply
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

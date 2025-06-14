@@ -39,6 +39,6 @@ func (c *Client) Close() error {
 
 // ServerAddress retrieves the address of the server.
 func (c *Client) ServerAddress(ctx context.Context) (*AddressReply, error) {
-	client := NewDaemonServiceClient(c.conn)
+	client := NewDaemonClient(c.conn)
 	return client.GetAddress(ctx, &AddressRequest{})
 }

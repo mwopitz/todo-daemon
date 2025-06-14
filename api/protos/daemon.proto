@@ -9,6 +9,6 @@ message AddressReply {
   string address = 2;
 }
 
-service DaemonService {
+service Daemon {
   rpc GetAddress (AddressRequest) returns (AddressReply) {}
 }

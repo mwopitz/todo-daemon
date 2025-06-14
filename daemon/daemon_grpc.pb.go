@@ -19,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DaemonService_GetAddress_FullMethodName = "/DaemonService/GetAddress"
+	Daemon_GetAddress_FullMethodName = "/Daemon/GetAddress"
 )
 
-// DaemonServiceClient is the client API for DaemonService service.
+// DaemonClient is the client API for Daemon service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type DaemonServiceClient interface {
+type DaemonClient interface {
 	GetAddress(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressReply, error)
 }
 
-type daemonServiceClient struct {
+type daemonClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewDaemonServiceClient(cc grpc.ClientConnInterface) DaemonServiceClient {
-	return &daemonServiceClient{cc}
+func NewDaemonClient(cc grpc.ClientConnInterface) DaemonClient {
+	return &daemonClient{cc}
 }
 
-func (c *daemonServiceClient) GetAddress(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressReply, error) {
+func (c *daemonClient) GetAddress(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AddressReply)
-	err := c.cc.Invoke(ctx, DaemonService_GetAddress_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Daemon_GetAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// DaemonServiceServer is the server API for DaemonService service.
-// All implementations must embed UnimplementedDaemonServiceServer
+// DaemonServer is the server API for Daemon service.
+// All implementations must embed UnimplementedDaemonServer
 // for forward compatibility.
-type DaemonServiceServer interface {
+type DaemonServer interface {
 	GetAddress(context.Context, *AddressRequest) (*AddressReply, error)
-	mustEmbedUnimplementedDaemonServiceServer()
+	mustEmbedUnimplementedDaemonServer()
 }
 
-// UnimplementedDaemonServiceServer must be embedded to have
+// UnimplementedDaemonServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedDaemonServiceServer struct{}
+type UnimplementedDaemonServer struct{}
 
-func (UnimplementedDaemonServiceServer) GetAddress(context.Context, *AddressRequest) (*AddressReply, error) {
+func (UnimplementedDaemonServer) GetAddress(context.Context, *AddressRequest) (*AddressReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAddress not implemented")
 }
-func (UnimplementedDaemonServiceServer) mustEmbedUnimplementedDaemonServiceServer() {}
-func (UnimplementedDaemonServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedDaemonServer) mustEmbedUnimplementedDaemonServer() {}
+func (UnimplementedDaemonServer) testEmbeddedByValue()                {}
 
-// UnsafeDaemonServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to DaemonServiceServer will
+// UnsafeDaemonServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DaemonServer will
 // result in compilation errors.
-type UnsafeDaemonServiceServer interface {
-	mustEmbedUnimplementedDaemonServiceServer()
+type UnsafeDaemonServer interface {
+	mustEmbedUnimplementedDaemonServer()
 }
 
-func RegisterDaemonServiceServer(s grpc.ServiceRegistrar, srv DaemonServiceServer) {
-	// If the following call pancis, it indicates UnimplementedDaemonServiceServer was
+func RegisterDaemonServer(s grpc.ServiceRegistrar, srv DaemonServer) {
+	// If the following call pancis, it indicates UnimplementedDaemonServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&DaemonService_ServiceDesc, srv)
+	s.RegisterService(&Daemon_ServiceDesc, srv)
 }
 
-func _DaemonService_GetAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Daemon_GetAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddressRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DaemonServiceServer).GetAddress(ctx, in)
+		return srv.(DaemonServer).GetAddress(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DaemonService_GetAddress_FullMethodName,
+		FullMethod: Daemon_GetAddress_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DaemonServiceServer).GetAddress(ctx, req.(*AddressRequest))
+		return srv.(DaemonServer).GetAddress(ctx, req.(*AddressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// DaemonService_ServiceDesc is the grpc.ServiceDesc for DaemonService service.
+// Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var DaemonService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "DaemonService",
-	HandlerType: (*DaemonServiceServer)(nil),
+var Daemon_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "Daemon",
+	HandlerType: (*DaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetAddress",
-			Handler:    _DaemonService_GetAddress_Handler,
+			Handler:    _Daemon_GetAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -13,7 +13,7 @@ import (
 )
 
 type Server struct {
-	UnimplementedDaemonServiceServer
+	UnimplementedDaemonServer
 	logger         *log.Logger
 	grpcServer     *grpc.Server
 	httpServer     *http.Server
@@ -43,7 +43,7 @@ func (s *Server) Serve(network, address string) error {
 	s.httpServerAddr = httpListener.Addr().String()
 
 	s.grpcServer = grpc.NewServer()
-	RegisterDaemonServiceServer(s.grpcServer, s)
+	RegisterDaemonServer(s.grpcServer, s)
 	s.httpServer = &http.Server{}
 
 	grpcDone := make(chan error, 1)
