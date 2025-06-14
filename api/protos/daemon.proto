@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/mwopitz/go-daemon/todo";
+option go_package = "github.com/mwopitz/go-daemon/daemon";
 
 message AddressRequest {}
 
@@ -9,6 +9,6 @@ message AddressReply {
   string address = 2;
 }
 
-service TodoService {
+service DaemonService {
   rpc GetAddress (AddressRequest) returns (AddressReply) {}
 }

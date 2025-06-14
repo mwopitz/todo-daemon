@@ -1,4 +1,4 @@
-package server
+package daemon
 
 import (
 	"context"
@@ -8,18 +8,17 @@ import (
 	"net"
 	"net/http"
 
-	pb "github.com/mwopitz/go-daemon/todo"
 	"google.golang.org/grpc"
 )
 
 type Server struct {
-	pb.UnimplementedTodoServiceServer
+	UnimplementedDaemonServiceServer
 	grpcServer     *grpc.Server
 	httpServer     *http.Server
 	httpServerAddr string
 }
 
-func New() *Server {
+func NewServer() *Server {
 	return &Server{}
 }
 
@@ -42,7 +41,7 @@ func (s *Server) Serve(network, address string) error {
 	s.httpServerAddr = httpListener.Addr().String()
 
 	s.grpcServer = grpc.NewServer()
-	pb.RegisterTodoServiceServer(s.grpcServer, s)
+	RegisterDaemonServiceServer(s.grpcServer, s)
 	s.httpServer = &http.Server{}
 
 	grpcDone := make(chan error, 1)
@@ -80,8 +79,8 @@ func (s *Server) GracefulStop() error {
 	return nil
 }
 
-func (s *Server) GetAddress(ctx context.Context, req *pb.AddressRequest) (*pb.AddressReply, error) {
-	return &pb.AddressReply{
+func (s *Server) GetAddress(ctx context.Context, req *AddressRequest) (*AddressReply, error) {
+	return &AddressReply{
 		Network: "tcp",
 		Address: s.httpServerAddr,
 	}, nil
