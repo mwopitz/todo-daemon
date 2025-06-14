@@ -31,7 +31,6 @@ func (s *Server) Serve(network, address string) error {
 	if err != nil {
 		return fmt.Errorf("cannot start gRPC server: %w", err)
 	}
-	defer grpcListener.Close()
 
 	s.logger.Printf("gRPC server listening on %s", grpcListener.Addr())
 
@@ -39,7 +38,6 @@ func (s *Server) Serve(network, address string) error {
 	if err != nil {
 		return fmt.Errorf("cannot start HTTP server: %w", err)
 	}
-	defer httpListener.Close()
 
 	s.logger.Printf("HTTP server listening on %s", httpListener.Addr())
 	s.httpServerAddr = httpListener.Addr().String()

@@ -80,7 +80,11 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	if !locked {
 		return fmt.Errorf("cannot acquire file lock %s; already running?", lockFile)
 	}
-	defer lock.Unlock()
+	defer func() {
+		if err := lock.Unlock(); err != nil {
+			c.logger.Printf("cannot release file lock: %v", err)
+		}
+	}()
 
 	if err := os.Remove(sockFile); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("cannot remove socket file: %w", err)
@@ -116,7 +120,11 @@ func (c *CLI) printServerAddress(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return err
 	}
-	defer client.Close()
+	defer func() {
+		if err := client.Close(); err != nil {
+			c.logger.Printf("cannot close client: %v", err)
+		}
+	}()
 
 	addr, err := client.ServerAddress(ctx)
 	if err != nil {
