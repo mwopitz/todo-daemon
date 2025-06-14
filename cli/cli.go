@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"log"
@@ -22,11 +23,7 @@ type CLI struct {
 
 func New(logger *log.Logger) *CLI {
 	c := new(CLI)
-	if logger != nil {
-		c.logger = logger
-	} else {
-		c.logger = log.New(os.Stderr, "go-daemon: ", log.Lmsgprefix)
-	}
+	c.logger = cmp.Or(logger, log.Default())
 	c.rootCmd = &cli.Command{
 		Name:  "go-daemon",
 		Usage: "A simple daemon server in Go",
@@ -89,7 +86,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
-	srv := daemon.NewServer()
+	srv := daemon.NewServer(c.logger)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -103,10 +100,10 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 
 	select {
 	case <-ctx.Done():
-		log.Printf("go-daemon: %v", ctx.Err())
+		c.logger.Print(ctx.Err())
 		return srv.GracefulStop()
 	case sig := <-sigc:
-		log.Printf("go-daemon: %s", sig)
+		c.logger.Print(sig)
 		return srv.GracefulStop()
 	case err := <-errc:
 		return err
@@ -115,7 +112,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 
 func (c *CLI) printServerAddress(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sockfile")
-	client, err := daemon.NewClient("unix", sockFile)
+	client, err := daemon.NewClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}

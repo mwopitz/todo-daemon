@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -13,13 +14,16 @@ import (
 
 type Server struct {
 	UnimplementedDaemonServiceServer
+	logger         *log.Logger
 	grpcServer     *grpc.Server
 	httpServer     *http.Server
 	httpServerAddr string
 }
 
-func NewServer() *Server {
-	return &Server{}
+func NewServer(logger *log.Logger) *Server {
+	return &Server{
+		logger: cmp.Or(logger, log.Default()),
+	}
 }
 
 func (s *Server) Serve(network, address string) error {
@@ -29,7 +33,7 @@ func (s *Server) Serve(network, address string) error {
 	}
 	defer grpcListener.Close()
 
-	log.Printf("go-daemon: gRPC server listening on %s", grpcListener.Addr())
+	s.logger.Printf("gRPC server listening on %s", grpcListener.Addr())
 
 	httpListener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
@@ -37,7 +41,7 @@ func (s *Server) Serve(network, address string) error {
 	}
 	defer httpListener.Close()
 
-	log.Printf("go-daemon: HTTP server listening on %s", httpListener.Addr())
+	s.logger.Printf("HTTP server listening on %s", httpListener.Addr())
 	s.httpServerAddr = httpListener.Addr().String()
 
 	s.grpcServer = grpc.NewServer()

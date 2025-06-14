@@ -1,26 +1,32 @@
 package daemon
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Client struct {
-	conn *grpc.ClientConn
+	conn   *grpc.ClientConn
+	logger *log.Logger
 }
 
 // NewClient creates a client and connects it to the server running at the
 // specified network and address.
-func NewClient(network, address string) (*Client, error) {
+func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 	target := fmt.Sprintf("%s:%s", network, address)
 	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to %s: %w", target, err)
 	}
-	return &Client{conn: conn}, nil
+	return &Client{
+		conn:   conn,
+		logger: cmp.Or(logger, log.Default()),
+	}, nil
 }
 
 // Close closes the server connection.
