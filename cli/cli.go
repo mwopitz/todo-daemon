@@ -25,7 +25,7 @@ func New(logger *log.Logger) *CLI {
 	if logger != nil {
 		c.logger = logger
 	} else {
-		c.logger = log.New(os.Stderr, "go-daemon: ", 0)
+		c.logger = log.New(os.Stderr, "go-daemon: ", log.Lmsgprefix)
 	}
 	c.rootCmd = &cli.Command{
 		Name:  "go-daemon",
@@ -36,9 +36,10 @@ func New(logger *log.Logger) *CLI {
 				Usage: "Run the go-daemon server",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "lockfile",
-						Usage: "path to the lock file",
-						Value: defaultLockFile(),
+						Name:      "lock",
+						Usage:     "path to the lock file",
+						Value:     defaultLockFile(),
+						TakesFile: true,
 					},
 				},
 				Action: c.runServer,
@@ -51,9 +52,10 @@ func New(logger *log.Logger) *CLI {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "sockfile",
-				Usage: "the path to the socket file",
-				Value: defaultSockFile(),
+				Name:      "sock",
+				Usage:     "path to the socket file",
+				Value:     defaultSockFile(),
+				TakesFile: true,
 			},
 		},
 	}
@@ -66,8 +68,8 @@ func (c *CLI) Run(ctx context.Context, args []string) error {
 }
 
 func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
-	lockFile := cmd.String("lockfile")
-	sockFile := cmd.String("sockfile")
+	lockFile := cmd.String("lock")
+	sockFile := cmd.String("sock")
 
 	err := os.MkdirAll(filepath.Dir(lockFile), 0755)
 	if err != nil {
