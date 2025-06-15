@@ -8,17 +8,19 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	pb "github.com/mwopitz/go-daemon/daemon"
 )
 
 type Client struct {
 	logger *log.Logger
 	conn   *grpc.ClientConn
-	daemon DaemonClient
+	daemon pb.DaemonClient
 }
 
-// NewClient creates a client and connects it to the server running at the
-// specified network and address.
-func NewClient(network, address string, logger *log.Logger) (*Client, error) {
+// newClient creates a go-daemon client and connects it to the server listening on the
+// specified network address.
+func newClient(network, address string, logger *log.Logger) (*Client, error) {
 	target := fmt.Sprintf("%s:%s", network, address)
 	conn, err := grpc.NewClient(
 		target,
@@ -28,13 +30,13 @@ func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 		return nil, fmt.Errorf("cannot connect to %s: %w", target, err)
 	}
 	return &Client{
-		conn:   conn,
-		daemon: NewDaemonClient(conn),
 		logger: cmp.Or(logger, log.Default()),
+		conn:   conn,
+		daemon: pb.NewDaemonClient(conn),
 	}, nil
 }
 
-// Close closes the server connection.
+// Close closes the connection to the go-daemon server.
 func (c *Client) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
@@ -42,7 +44,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// ServerStatus retrieves the address of the server.
-func (c *Client) ServerStatus(ctx context.Context) (*StatusReply, error) {
-	return c.daemon.Status(ctx, &StatusRequest{})
+// ServerStatus retrieves the address of the go-daemon server.
+func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusReply, error) {
+	return c.daemon.Status(ctx, &pb.StatusRequest{})
 }

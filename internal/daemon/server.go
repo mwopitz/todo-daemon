@@ -11,17 +11,22 @@ import (
 	"os"
 
 	"google.golang.org/grpc"
+
+	pb "github.com/mwopitz/go-daemon/daemon"
 )
 
 type Server struct {
-	UnimplementedDaemonServer
+	pb.UnimplementedDaemonServer
 	logger         *log.Logger
 	grpcServer     *grpc.Server
 	httpServer     *http.Server
 	httpServerAddr string
 }
 
-func NewServer(logger *log.Logger) *Server {
+// newServer creates a new go-daemon server with an optional logger.
+//
+// If no logger is provided, it defaults to [log.Default()].
+func newServer(logger *log.Logger) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
 		logger:     cmp.Or(logger, log.Default()),
@@ -30,7 +35,7 @@ func NewServer(logger *log.Logger) *Server {
 			Handler: mux,
 		},
 	}
-	RegisterDaemonServer(s.grpcServer, s)
+	pb.RegisterDaemonServer(s.grpcServer, s)
 	return s
 }
 
@@ -86,14 +91,14 @@ func (s *Server) GracefulStop() error {
 }
 
 // Status retrieves the status of the go-daemon server.
-func (s *Server) Status(ctx context.Context, req *StatusRequest) (*StatusReply, error) {
+func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusReply, error) {
 	pid := int32(os.Getpid())
 	apiBaseURL := fmt.Sprintf("http://%s/api", s.httpServerAddr)
-	return &StatusReply{
-		Process: &ServerProcess{
+	return &pb.StatusReply{
+		Process: &pb.ServerProcess{
 			Pid: &pid,
 		},
-		Urls: &ServerUrls{
+		Urls: &pb.ServerUrls{
 			ApiBaseUrl: &apiBaseURL,
 		},
 	}, nil

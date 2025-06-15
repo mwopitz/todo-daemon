@@ -2,8 +2,8 @@
 
 This repository contains a proof of concept for a [daemon][daemon]-like service
 created with [Go][go] that provides both a [command-line interface][cli] (CLI)
-as well as a [REST][rest] API. It's designed to run user scoped (not as `root`) on
-a desktop client.
+as well as a [REST][rest] API. It's designed to run user scoped (not as `root`)
+on a desktop client.
 
 [cli]: https://en.wikipedia.org/wiki/Command-line_interface
 [daemon]: https://en.wikipedia.org/wiki/Daemon_(computing)
@@ -24,12 +24,12 @@ The daemon process runs two servers:
 ## Getting started
 
 1.  [Install Go](https://go.dev/doc/install)
-2.  Build the go-daemon:
+1.  Build the go-daemon:
     
-    ```shs
+    ```sh
     go build
     ```
-3.  Start it:
+1.  Start it:
     
     ```sh
     ./go-daemon run
@@ -47,14 +47,14 @@ The daemon process runs two servers:
     curl -LO "$pb_rel/download/v$pb_ver/protoc-$pb_ver-linux-x86_64.zip"
     unzip "protoc-$pb_ver-linux-x86_64.zip" -d "$HOME/.local"
     ```
-2.  Install the Go plugins for the protobuf compiler:
+1.  Install the Go plugins for the protobuf compiler:
     
     ```sh
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
     ```
-3.  Execute the compiler:
+1.  Execute the compiler:
     
     ```sh
-    protoc --proto_path=./api/protos --go_out module=github.com/mwopitz/go-daemon:. --go-grpc_out module=github.com/mwopitz/go-daemon:. daemon.proto
+    protoc --proto_path=./daemon --go_out module=github.com/mwopitz/go-daemon:. --go-grpc_out module=github.com/mwopitz/go-daemon:. ./daemon/*.proto
     ```

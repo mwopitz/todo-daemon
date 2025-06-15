@@ -10,7 +10,6 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
-	sync "sync"
 	unsafe "unsafe"
 )
 
@@ -21,233 +20,26 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Options for querying the status of the daemon server.
-type StatusRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StatusRequest) Reset() {
-	*x = StatusRequest{}
-	mi := &file_daemon_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StatusRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StatusRequest) ProtoMessage() {}
-
-func (x *StatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_daemon_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StatusRequest.ProtoReflect.Descriptor instead.
-func (*StatusRequest) Descriptor() ([]byte, []int) {
-	return file_daemon_proto_rawDescGZIP(), []int{0}
-}
-
-// The status of the go-daemon server.
-type StatusReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Process       *ServerProcess         `protobuf:"bytes,1,opt,name=process" json:"process,omitempty"`
-	Urls          *ServerUrls            `protobuf:"bytes,2,opt,name=urls" json:"urls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StatusReply) Reset() {
-	*x = StatusReply{}
-	mi := &file_daemon_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StatusReply) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StatusReply) ProtoMessage() {}
-
-func (x *StatusReply) ProtoReflect() protoreflect.Message {
-	mi := &file_daemon_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StatusReply.ProtoReflect.Descriptor instead.
-func (*StatusReply) Descriptor() ([]byte, []int) {
-	return file_daemon_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *StatusReply) GetProcess() *ServerProcess {
-	if x != nil {
-		return x.Process
-	}
-	return nil
-}
-
-func (x *StatusReply) GetUrls() *ServerUrls {
-	if x != nil {
-		return x.Urls
-	}
-	return nil
-}
-
-// The status of the go-daemon server process.
-type ServerProcess struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pid           *int32                 `protobuf:"varint,1,opt,name=pid" json:"pid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ServerProcess) Reset() {
-	*x = ServerProcess{}
-	mi := &file_daemon_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServerProcess) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerProcess) ProtoMessage() {}
-
-func (x *ServerProcess) ProtoReflect() protoreflect.Message {
-	mi := &file_daemon_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerProcess.ProtoReflect.Descriptor instead.
-func (*ServerProcess) Descriptor() ([]byte, []int) {
-	return file_daemon_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *ServerProcess) GetPid() int32 {
-	if x != nil && x.Pid != nil {
-		return *x.Pid
-	}
-	return 0
-}
-
-// The URLs provided by the go-daemon server.
-type ServerUrls struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ApiBaseUrl    *string                `protobuf:"bytes,1,opt,name=api_base_url,json=apiBaseUrl" json:"api_base_url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ServerUrls) Reset() {
-	*x = ServerUrls{}
-	mi := &file_daemon_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServerUrls) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerUrls) ProtoMessage() {}
-
-func (x *ServerUrls) ProtoReflect() protoreflect.Message {
-	mi := &file_daemon_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerUrls.ProtoReflect.Descriptor instead.
-func (*ServerUrls) Descriptor() ([]byte, []int) {
-	return file_daemon_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ServerUrls) GetApiBaseUrl() string {
-	if x != nil && x.ApiBaseUrl != nil {
-		return *x.ApiBaseUrl
-	}
-	return ""
-}
-
 var File_daemon_proto protoreflect.FileDescriptor
 
 const file_daemon_proto_rawDesc = "" +
 	"\n" +
-	"\fdaemon.proto\"\x0f\n" +
-	"\rStatusRequest\"X\n" +
-	"\vStatusReply\x12(\n" +
-	"\aprocess\x18\x01 \x01(\v2\x0e.ServerProcessR\aprocess\x12\x1f\n" +
-	"\x04urls\x18\x02 \x01(\v2\v.ServerUrlsR\x04urls\"!\n" +
-	"\rServerProcess\x12\x10\n" +
-	"\x03pid\x18\x01 \x01(\x05R\x03pid\".\n" +
-	"\n" +
-	"ServerUrls\x12 \n" +
-	"\fapi_base_url\x18\x01 \x01(\tR\n" +
-	"apiBaseUrl22\n" +
+	"\fdaemon.proto\x1a\x14status_request.proto\x1a\x12status_reply.proto22\n" +
 	"\x06Daemon\x12(\n" +
 	"\x06Status\x12\x0e.StatusRequest\x1a\f.StatusReply\"\x00B%Z#github.com/mwopitz/go-daemon/daemonb\beditionsp\xe8\a"
 
-var (
-	file_daemon_proto_rawDescOnce sync.Once
-	file_daemon_proto_rawDescData []byte
-)
-
-func file_daemon_proto_rawDescGZIP() []byte {
-	file_daemon_proto_rawDescOnce.Do(func() {
-		file_daemon_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_daemon_proto_rawDesc), len(file_daemon_proto_rawDesc)))
-	})
-	return file_daemon_proto_rawDescData
-}
-
-var file_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_daemon_proto_goTypes = []any{
 	(*StatusRequest)(nil), // 0: StatusRequest
 	(*StatusReply)(nil),   // 1: StatusReply
-	(*ServerProcess)(nil), // 2: ServerProcess
-	(*ServerUrls)(nil),    // 3: ServerUrls
 }
 var file_daemon_proto_depIdxs = []int32{
-	2, // 0: StatusReply.process:type_name -> ServerProcess
-	3, // 1: StatusReply.urls:type_name -> ServerUrls
-	0, // 2: Daemon.Status:input_type -> StatusRequest
-	1, // 3: Daemon.Status:output_type -> StatusReply
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: Daemon.Status:input_type -> StatusRequest
+	1, // 1: Daemon.Status:output_type -> StatusReply
+	1, // [1:2] is the sub-list for method output_type
+	0, // [0:1] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_daemon_proto_init() }
@@ -255,19 +47,20 @@ func file_daemon_proto_init() {
 	if File_daemon_proto != nil {
 		return
 	}
+	file_status_request_proto_init()
+	file_status_reply_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_daemon_proto_rawDesc), len(file_daemon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_daemon_proto_goTypes,
 		DependencyIndexes: file_daemon_proto_depIdxs,
-		MessageInfos:      file_daemon_proto_msgTypes,
 	}.Build()
 	File_daemon_proto = out.File
 	file_daemon_proto_goTypes = nil

@@ -1,0 +1,12 @@
+edition = "2023";
+
+option go_package = "github.com/mwopitz/go-daemon/daemon";
+
+import "server_process.proto";
+import "server_urls.proto";
+
+// The status of the go-daemon server.
+message StatusReply {
+  ServerProcess process = 1;
+  ServerUrls urls = 2;
+}

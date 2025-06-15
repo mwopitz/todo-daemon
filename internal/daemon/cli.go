@@ -1,4 +1,4 @@
-package cli
+package daemon
 
 import (
 	"cmp"
@@ -11,7 +11,6 @@ import (
 	"syscall"
 
 	"github.com/gofrs/flock"
-	"github.com/mwopitz/go-daemon/daemon"
 	"github.com/urfave/cli/v3"
 )
 
@@ -21,8 +20,9 @@ type CLI struct {
 	rootCmd *cli.Command
 }
 
-func New(logger *log.Logger) *CLI {
-	c := new(CLI)
+// NewCLI creates a new CLI instance with an optional logger.
+func NewCLI(logger *log.Logger) *CLI {
+	c := &CLI{}
 	c.logger = cmp.Or(logger, log.Default())
 	c.rootCmd = &cli.Command{
 		Name:  "go-daemon",
@@ -56,10 +56,11 @@ func New(logger *log.Logger) *CLI {
 			},
 		},
 	}
+
 	return c
 }
 
-// Run executes the CLI with the provided context and arguments.
+// Run executes the CLI command specified by the given arguments.
 func (c *CLI) Run(ctx context.Context, args []string) error {
 	return c.rootCmd.Run(ctx, args)
 }
@@ -95,7 +96,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
-	srv := daemon.NewServer(c.logger)
+	srv := newServer(c.logger)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -121,7 +122,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 
 func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
-	client, err := daemon.NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
