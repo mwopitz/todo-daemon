@@ -136,7 +136,7 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot get status: %w", err)
 	}
 	if status.Process != nil {
-		fmt.Printf("pid: %d\n", status.Process.Pid)
+		fmt.Printf("pid: %d\n", *status.Process.Pid)
 	}
 	if status.Urls != nil && status.Urls.ApiBaseUrl != nil {
 		fmt.Printf("api_base_url: %s\n", *status.Urls.ApiBaseUrl)
