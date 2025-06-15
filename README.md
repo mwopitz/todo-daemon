@@ -37,7 +37,16 @@ The daemon process runs two servers:
 
 ## Compiling the gRPC components
 
-1.  [Install the protobuf compiler](https://protobuf.dev/installation/)
+1.  [Install the protobuf compiler](https://protobuf.dev/installation/).
+    
+    For example, on Linux:
+    
+    ```sh
+    pb_rel=https://github.com/protocolbuffers/protobuf/releases
+    pb_ver=31.1
+    curl -LO "$pb_rel/download/v$pb_ver/protoc-$pb_ver-linux-x86_64.zip"
+    unzip "protoc-$pb_ver-linux-x86_64.zip" -d "$HOME/.local"
+    ```
 2.  Install the Go plugins for the protobuf compiler:
     
     ```sh

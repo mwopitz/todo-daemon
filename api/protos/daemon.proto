@@ -1,14 +1,28 @@
-syntax = "proto3";
+edition = "2023";
 
 option go_package = "github.com/mwopitz/go-daemon/daemon";
 
-message AddressRequest {}
-
-message AddressReply {
-  string network = 1;
-  string address = 2;
+// The gRPC interface of the go-daemon.
+service Daemon {
+  // Queries the status of the daemon process.
+  rpc Status (StatusRequest) returns (StatusReply) {}
 }
 
-service Daemon {
-  rpc GetAddress (AddressRequest) returns (AddressReply) {}
+// Options for querying the status of the daemon server.
+message StatusRequest {}
+
+// The status of the go-daemon server.
+message StatusReply {
+  ServerProcess process = 1;
+  ServerUrls urls = 2;
+}
+
+// The status of the go-daemon server process.
+message ServerProcess {
+  int32 pid = 1;
+}
+
+// The URLs provided by the go-daemon server.
+message ServerUrls {
+  string api_base_url = 1;
 }

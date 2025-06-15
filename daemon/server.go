@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"google.golang.org/grpc"
 )
@@ -21,9 +22,16 @@ type Server struct {
 }
 
 func NewServer(logger *log.Logger) *Server {
-	return &Server{
-		logger: cmp.Or(logger, log.Default()),
+	mux := http.NewServeMux()
+	s := &Server{
+		logger:     cmp.Or(logger, log.Default()),
+		grpcServer: grpc.NewServer(),
+		httpServer: &http.Server{
+			Handler: mux,
+		},
 	}
+	RegisterDaemonServer(s.grpcServer, s)
+	return s
 }
 
 func (s *Server) Serve(network, address string) error {
@@ -41,10 +49,6 @@ func (s *Server) Serve(network, address string) error {
 
 	s.logger.Printf("HTTP server listening on %s", httpListener.Addr())
 	s.httpServerAddr = httpListener.Addr().String()
-
-	s.grpcServer = grpc.NewServer()
-	RegisterDaemonServer(s.grpcServer, s)
-	s.httpServer = &http.Server{}
 
 	grpcDone := make(chan error, 1)
 	go func() {
@@ -81,9 +85,16 @@ func (s *Server) GracefulStop() error {
 	return nil
 }
 
-func (s *Server) GetAddress(ctx context.Context, req *AddressRequest) (*AddressReply, error) {
-	return &AddressReply{
-		Network: "tcp",
-		Address: s.httpServerAddr,
+// Status retrieves the status of the go-daemon server.
+func (s *Server) Status(ctx context.Context, req *StatusRequest) (*StatusReply, error) {
+	pid := int32(os.Getpid())
+	apiBaseURL := fmt.Sprintf("http://%s/api", s.httpServerAddr)
+	return &StatusReply{
+		Process: &ServerProcess{
+			Pid: &pid,
+		},
+		Urls: &ServerUrls{
+			ApiBaseUrl: &apiBaseURL,
+		},
 	}, nil
 }

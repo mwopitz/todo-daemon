@@ -42,9 +42,9 @@ func New(logger *log.Logger) *CLI {
 				Action: c.runServer,
 			},
 			{
-				Name:   "address",
-				Usage:  "Get the address of the go-daemon server",
-				Action: c.printServerAddress,
+				Name:   "status",
+				Usage:  "Get the status of the go-daemon server",
+				Action: c.printServerStatus,
 			},
 		},
 		Flags: []cli.Flag{
@@ -85,6 +85,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 			c.logger.Printf("cannot release file lock: %v", err)
 		}
 	}()
+	c.logger.Printf("acquired file lock %s", lockFile)
 
 	if err := os.Remove(sockFile); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("cannot remove socket file: %w", err)
@@ -114,8 +115,8 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	}
 }
 
-func (c *CLI) printServerAddress(ctx context.Context, cmd *cli.Command) error {
-	sockFile := cmd.String("sockfile")
+func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
+	sockFile := cmd.String("sock")
 	client, err := daemon.NewClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
@@ -126,10 +127,15 @@ func (c *CLI) printServerAddress(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	addr, err := client.ServerAddress(ctx)
+	status, err := client.ServerStatus(ctx)
 	if err != nil {
-		return fmt.Errorf("cannot get address: %w", err)
+		return fmt.Errorf("cannot get status: %w", err)
 	}
-	fmt.Printf("%s\n", addr.Address)
+	if status.Process != nil {
+		fmt.Printf("pid: %d\n", status.Process.Pid)
+	}
+	if status.Urls != nil && status.Urls.ApiBaseUrl != nil {
+		fmt.Printf("api_base_url: %s\n", *status.Urls.ApiBaseUrl)
+	}
 	return nil
 }

@@ -9,6 +9,7 @@
 *.dll
 *.so
 *.dylib
+*.zip
 go-daemon
 
 # Test binary, built with `go test -c`
