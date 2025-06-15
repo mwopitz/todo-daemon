@@ -68,7 +68,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	lockFile := cmd.String("lock")
 	sockFile := cmd.String("sock")
 
-	err := os.MkdirAll(filepath.Dir(lockFile), 0755)
+	err := os.MkdirAll(filepath.Dir(lockFile), 0700)
 	if err != nil {
 		return fmt.Errorf("cannot acquire file lock: %w", err)
 	}
@@ -87,6 +87,10 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	}()
 	c.logger.Printf("acquired file lock %s", lockFile)
 
+	err = os.MkdirAll(filepath.Dir(sockFile), 0700)
+	if err != nil {
+		return fmt.Errorf("cannot create socket directory: %w", err)
+	}
 	if err := os.Remove(sockFile); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
