@@ -12,6 +12,8 @@ on a desktop client.
 
 ## Architecture
 
+![Architecture diagram](docs/architecure.svg)
+
 The Go Daemon has one primary process, the daemon process, and zero or more
 secondary command processes.
 
@@ -20,6 +22,9 @@ The daemon process runs two servers:
 * An HTTP server that provides a REST API to other applications.
 * A [gRPC](https://grpc.io/) server that is used for internal communication
   between the daemon process and the command processes.
+
+The command processes provide a command-line interface (CLI) for interacting
+with the daemon process.
 
 ## Getting started
 
