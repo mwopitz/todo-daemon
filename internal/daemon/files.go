@@ -10,7 +10,7 @@ import (
 func runDir() string {
 	switch runtime.GOOS {
 	case "windows":
-		return filepath.Join(os.TempDir())
+		return os.TempDir()
 	default:
 		return filepath.Join("/run/user", strconv.Itoa(os.Getuid()))
 	}

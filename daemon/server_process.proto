@@ -4,5 +4,5 @@ option go_package = "github.com/mwopitz/go-daemon/daemon";
 
 // The status of the go-daemon server process.
 message ServerProcess {
-  int32 pid = 1;
+  uint32 pid = 1;
 }

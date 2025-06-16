@@ -136,11 +136,11 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("cannot get status: %w", err)
 	}
-	if status.Process != nil {
-		fmt.Printf("pid: %d\n", *status.Process.Pid)
+	if proc := status.GetProcess(); proc != nil {
+		fmt.Printf("pid: %d\n", proc.GetPid())
 	}
-	if status.Urls != nil && status.Urls.ApiBaseUrl != nil {
-		fmt.Printf("api_base_url: %s\n", *status.Urls.ApiBaseUrl)
+	if urls := status.GetUrls(); urls != nil {
+		fmt.Printf("api_base_url: %s\n", urls.GetApiBaseUrl())
 	}
 	return nil
 }

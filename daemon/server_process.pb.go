@@ -24,7 +24,7 @@ const (
 // The status of the go-daemon server process.
 type ServerProcess struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pid           *int32                 `protobuf:"varint,1,opt,name=pid" json:"pid,omitempty"`
+	Pid           *uint32                `protobuf:"varint,1,opt,name=pid" json:"pid,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -59,7 +59,7 @@ func (*ServerProcess) Descriptor() ([]byte, []int) {
 	return file_server_process_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ServerProcess) GetPid() int32 {
+func (x *ServerProcess) GetPid() uint32 {
 	if x != nil && x.Pid != nil {
 		return *x.Pid
 	}
@@ -72,7 +72,7 @@ const file_server_process_proto_rawDesc = "" +
 	"\n" +
 	"\x14server_process.proto\"!\n" +
 	"\rServerProcess\x12\x10\n" +
-	"\x03pid\x18\x01 \x01(\x05R\x03pidB%Z#github.com/mwopitz/go-daemon/daemonb\beditionsp\xe8\a"
+	"\x03pid\x18\x01 \x01(\rR\x03pidB%Z#github.com/mwopitz/go-daemon/daemonb\beditionsp\xe8\a"
 
 var (
 	file_server_process_proto_rawDescOnce sync.Once

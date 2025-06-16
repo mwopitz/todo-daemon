@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"net/http"
 	"os"
@@ -91,12 +92,16 @@ func (s *Server) GracefulStop() error {
 }
 
 // Status retrieves the status of the go-daemon server.
-func (s *Server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusReply, error) {
-	pid := int32(os.Getpid())
+func (s *Server) Status(_ context.Context, _ *pb.StatusRequest) (*pb.StatusReply, error) {
+	pid := os.Getpid()
+	if pid < 0 || pid > math.MaxUint32 {
+		return nil, fmt.Errorf("invalid PID: %d", pid)
+	}
+	pidu := uint32(pid)
 	apiBaseURL := fmt.Sprintf("http://%s/api", s.httpServerAddr)
 	return &pb.StatusReply{
 		Process: &pb.ServerProcess{
-			Pid: &pid,
+			Pid: &pidu,
 		},
 		Urls: &pb.ServerUrls{
 			ApiBaseUrl: &apiBaseURL,
