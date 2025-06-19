@@ -23,18 +23,19 @@ type CLI struct {
 	rootCmd *cli.Command
 }
 
-// NewCLI creates a new CLI instance with an optional logger. If no logger is
-// provided, the CLI will use [log.Default] instead.
-func NewCLI(logger *log.Logger) *CLI {
+// NewCLI creates a new CLI instance with the specified version and an optional
+// logger. If no logger is provided, the CLI will use [log.Default] instead.
+func NewCLI(version string, logger *log.Logger) *CLI {
 	c := &CLI{}
 	c.logger = cmp.Or(logger, log.Default())
 	c.rootCmd = &cli.Command{
 		Name:  "go-daemon",
 		Usage: "A simple daemon server in Go",
+		Version: version,
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
-				Usage: "Run the go-daemon server",
+				Usage: "Run the Go Daemon server",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:      "lock",
@@ -47,8 +48,13 @@ func NewCLI(logger *log.Logger) *CLI {
 			},
 			{
 				Name:   "status",
-				Usage:  "Get the status of the go-daemon server",
+				Usage:  "Print the status of the Go Daemon server",
 				Action: c.printServerStatus,
+			},
+			{
+				Name: "version",
+				Usage: "Print the version of the Go Daemon",
+				Action: c.printVersion,
 			},
 		},
 		Flags: []cli.Flag{
@@ -146,4 +152,9 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf("api_base_url: %s\n", u)
 	}
 	return nil
+}
+
+func (c *CLI) printVersion(_ context.Context, _ *cli.Command) error {
+	_, err := fmt.Printf("go-daemon version %s\n", c.rootCmd.Version)
+	return err
 }

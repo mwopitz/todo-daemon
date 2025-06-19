@@ -15,9 +15,12 @@ import (
 	"github.com/mwopitz/go-daemon/internal/daemon"
 )
 
+// Version is the version of the Go Daemon.
+var Version = "0.0.0"
+
 func main() {
 	logger := log.New(os.Stderr, "go-daemon: ", log.Lmsgprefix)
-	cli := daemon.NewCLI(logger)
+	cli := daemon.NewCLI(Version, logger)
 	ctx, cancel := context.WithCancelCause(context.Background())
 
 	errchan := make(chan error, 1)
