@@ -61,3 +61,33 @@ linters:
       # Enable all available rules.
       # Default: false
       enable-all-rules: true
+      rules:
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#add-constant
+        - name: add-constant
+          arguments:
+            - max-lit-count: '3'
+              allow-strs: '""'
+              allow-ints: '0,1,2'
+              allow-floats: '0.0,0.,1.0,1.,2.0,2.'
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#enforce-repeated-arg-type-style
+        - name: enforce-repeated-arg-type-style
+          arguments:
+            - short
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#enforce-map-style
+        - name: enforce-map-style
+          arguments:
+            - make
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#enforce-slice-style
+        - name: enforce-slice-style
+          arguments:
+            - make
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#line-length-limit
+        - name: line-length-limit
+          severity: warning
+          arguments: [80]
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#range-val-address
+        - name: range-val-address
+          disabled: true # irrelevant for Go 1.22+
+        # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#range-val-in-closure
+        - name: range-val-in-closure
+          disabled: true # irrelevant for Go 1.22+
