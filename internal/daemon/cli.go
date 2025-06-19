@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 
 	"github.com/gofrs/flock"
 	"github.com/urfave/cli/v3"
@@ -101,26 +99,26 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
+	// Create the Go Daemon server and run it in a separate goroutine, so we can
+	// wait for either the server to stop or ctx.Done is closed.
 	srv := NewServer(c.logger)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	errc := make(chan error, 1)
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
+	done := make(chan error, 1)
 	go func() {
-		errc <- srv.Serve("unix", sockFile)
-		close(errc)
+		done <- srv.Serve("unix", sockFile)
+		close(done)
 	}()
 
+	// Wait until either the server stops or the context gets canceled.
 	select {
 	case <-ctx.Done():
-		c.logger.Print(ctx.Err())
+		err := ctx.Err()
+		if errors.Is(err, context.Canceled) {
+			c.logger.Println(context.Cause(ctx))
+		} else {
+			c.logger.Println(err)
+		}
 		return srv.GracefulStop()
-	case sig := <-sigc:
-		c.logger.Print(sig)
-		return srv.GracefulStop()
-	case err := <-errc:
+	case err := <-done:
 		return err
 	}
 }
