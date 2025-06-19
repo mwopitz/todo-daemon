@@ -5,10 +5,17 @@ created with [Go][go] that provides both a [command-line interface][cli] (CLI)
 as well as a [REST][rest] API. It's designed to run user scoped (not as `root`)
 on a desktop client.
 
+The Go Daemon *does not* behave like a traditional [SysV daemon][sysv-daemon];
+it doesn't call `fork` to detach itself from the parent process. Instead, the
+Go Daemon behaves more like a [new-style daemon][systemd-daemon], as defined by
+systemd.
+
 [cli]: https://en.wikipedia.org/wiki/Command-line_interface
 [daemon]: https://en.wikipedia.org/wiki/Daemon_(computing)
 [go]: https://go.dev/
 [rest]: https://en.wikipedia.org/wiki/REST
+[sysv-daemon]: https://www.freedesktop.org/software/systemd/man/latest/daemon.html#New-Style%20Daemons
+[systemd-daemon]: https://www.freedesktop.org/software/systemd/man/latest/daemon.html#New-Style%20Daemons
 
 ## Architecture
 
