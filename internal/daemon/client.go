@@ -12,15 +12,16 @@ import (
 	pb "github.com/mwopitz/go-daemon/daemon"
 )
 
+// Client is used for communicating with the Go Daemon server.
 type Client struct {
 	logger *log.Logger
 	conn   *grpc.ClientConn
 	daemon pb.DaemonClient
 }
 
-// newClient creates a go-daemon client and connects it to the server listening on the
-// specified network address.
-func newClient(network, address string, logger *log.Logger) (*Client, error) {
+// NewClient creates a Go Daemon client and connects it to the server listening
+// on the specified network address.
+func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 	target := fmt.Sprintf("%s:%s", network, address)
 	conn, err := grpc.NewClient(
 		target,
@@ -36,7 +37,7 @@ func newClient(network, address string, logger *log.Logger) (*Client, error) {
 	}, nil
 }
 
-// Close closes the connection to the go-daemon server.
+// Close closes the connection to the Go Daemon server.
 func (c *Client) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
@@ -44,7 +45,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// ServerStatus retrieves the address of the go-daemon server.
+// ServerStatus retrieves the address of the Go Daemon server.
 func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusReply, error) {
 	return c.daemon.Status(ctx, &pb.StatusRequest{})
 }

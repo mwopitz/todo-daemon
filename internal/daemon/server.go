@@ -16,6 +16,9 @@ import (
 	pb "github.com/mwopitz/go-daemon/daemon"
 )
 
+// Server implements the server of the Go Daemon. It runs both an HTTP server,
+// which provides a REST API to external applications, as well as a gRPC server,
+// which is used for internal communication between the Go Daemon processes.
 type Server struct {
 	pb.UnimplementedDaemonServer
 	logger         *log.Logger
@@ -24,10 +27,9 @@ type Server struct {
 	httpServerAddr string
 }
 
-// newServer creates a new go-daemon server with an optional logger.
-//
-// If no logger is provided, it defaults to [log.Default()].
-func newServer(logger *log.Logger) *Server {
+// NewServer creates a new Go Daemon server with an optional logger. If no
+// logger is provided, it the server uses [log.Default].
+func NewServer(logger *log.Logger) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
 		logger:     cmp.Or(logger, log.Default()),
@@ -40,6 +42,9 @@ func newServer(logger *log.Logger) *Server {
 	return s
 }
 
+// Serve starts both the underlying HTTP server and gRPC server. The specified
+// network and address arguments are only used for the gRPC server; the HTTP
+// server always listens on IPv4 localhost + a random free port.
 func (s *Server) Serve(network, address string) error {
 	grpcListener, err := net.Listen(network, address)
 	if err != nil {
@@ -71,6 +76,8 @@ func (s *Server) Serve(network, address string) error {
 	return errors.Join(<-grpcDone, <-httpDone)
 }
 
+// Stop stops both the HTTP server and the gRPC server immediately. It does not
+// wait for active RPCs or HTTP requests to complete.
 func (s *Server) Stop() error {
 	if s.grpcServer != nil {
 		s.grpcServer.Stop()
@@ -81,6 +88,8 @@ func (s *Server) Stop() error {
 	return nil
 }
 
+// GracefulStop stops both the HTTP server and the gRPC server. It waits until
+// all active RPCs and HTTP requests are finished.
 func (s *Server) GracefulStop() error {
 	if s.grpcServer != nil {
 		s.grpcServer.GracefulStop()
@@ -91,8 +100,11 @@ func (s *Server) GracefulStop() error {
 	return nil
 }
 
-// Status retrieves the status of the go-daemon server.
-func (s *Server) Status(_ context.Context, _ *pb.StatusRequest) (*pb.StatusReply, error) {
+// Status retrieves the status of the Go Daemon server.
+func (s *Server) Status(
+	_ context.Context,
+	_ *pb.StatusRequest,
+) (*pb.StatusReply, error) {
 	pid := os.Getpid()
 	if pid < 0 || pid > math.MaxUint32 {
 		return nil, fmt.Errorf("invalid PID: %d", pid)

@@ -3,6 +3,7 @@ package daemon
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,13 +15,18 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// CLI implements the command-line interface of the go-daemon.
+// ErrAlreadyRunning is returned by [CLI.Run] when executing the run command
+// while the Go Daemon server is already running.
+var ErrAlreadyRunning = errors.New("another instance is already running")
+
+// CLI implements the command-line interface of the Go Daemon.
 type CLI struct {
 	logger  *log.Logger
 	rootCmd *cli.Command
 }
 
-// NewCLI creates a new CLI instance with an optional logger.
+// NewCLI creates a new CLI instance with an optional logger. If no logger is
+// provided, the CLI will use [log.Default] instead.
 func NewCLI(logger *log.Logger) *CLI {
 	c := &CLI{}
 	c.logger = cmp.Or(logger, log.Default())
@@ -56,7 +62,6 @@ func NewCLI(logger *log.Logger) *CLI {
 			},
 		},
 	}
-
 	return c
 }
 
@@ -79,7 +84,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot acquire file lock: %w", err)
 	}
 	if !locked {
-		return fmt.Errorf("cannot acquire file lock %s; already running?", lockFile)
+		return ErrAlreadyRunning
 	}
 	defer func() {
 		if err := lock.Unlock(); err != nil {
@@ -96,7 +101,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
-	srv := newServer(c.logger)
+	srv := NewServer(c.logger)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -122,7 +127,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 
 func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
-	client, err := newClient("unix", sockFile, c.logger)
+	client, err := NewClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -136,11 +141,11 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("cannot get status: %w", err)
 	}
-	if proc := status.GetProcess(); proc != nil {
-		fmt.Printf("pid: %d\n", proc.GetPid())
+	if pid := status.GetProcess().GetPid(); pid > 0 {
+		fmt.Printf("pid: %d\n", pid)
 	}
-	if urls := status.GetUrls(); urls != nil {
-		fmt.Printf("api_base_url: %s\n", urls.GetApiBaseUrl())
+	if u := status.GetUrls().GetApiBaseUrl(); u != "" {
+		fmt.Printf("api_base_url: %s\n", u)
 	}
 	return nil
 }
