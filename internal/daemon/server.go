@@ -6,40 +6,34 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"net"
 	"net/http"
-	"os"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	pb "github.com/mwopitz/go-daemon/internal/protogen"
+	"github.com/mwopitz/go-daemon/internal/todo"
 	"google.golang.org/grpc"
-
-	pb "github.com/mwopitz/go-daemon/daemon"
 )
 
 // Server implements the server of the Go Daemon. It runs both an HTTP server,
 // which provides a REST API to external applications, as well as a gRPC server,
 // which is used for internal communication between the Go Daemon processes.
 type Server struct {
-	pb.UnimplementedDaemonServer
 	logger         *log.Logger
 	grpcServer     *grpc.Server
 	httpServer     *http.Server
-	httpServerAddr string
 }
 
 // NewServer creates a new Go Daemon server with an optional logger. If no
 // logger is provided, it the server uses [log.Default].
 func NewServer(logger *log.Logger) *Server {
-	mux := http.NewServeMux()
-	s := &Server{
+	grpcServer := grpc.NewServer()
+	httpServer := &http.Server{}
+	return &Server{
 		logger:     cmp.Or(logger, log.Default()),
-		grpcServer: grpc.NewServer(),
-		httpServer: &http.Server{
-			Handler: mux,
-		},
+		grpcServer: grpcServer,
+		httpServer: httpServer,
 	}
-	pb.RegisterDaemonServer(s.grpcServer, s)
-	return s
 }
 
 // Serve starts both the underlying HTTP server and gRPC server. The specified
@@ -59,7 +53,16 @@ func (s *Server) Serve(network, address string) error {
 	}
 
 	s.logger.Printf("HTTP server listening on %s", httpListener.Addr())
-	s.httpServerAddr = httpListener.Addr().String()
+
+	mux := runtime.NewServeMux()
+	taskdb := todo.NewInMemoryTaskDatabase()
+	svc := todo.NewTaskService(taskdb)
+	ctrl := todo.NewController(svc, s.logger)
+
+	pb.RegisterTodoDaemonServer(s.grpcServer, ctrl)
+	pb.RegisterTodoDaemonHandlerServer(context.Background(), mux, ctrl)
+
+	s.httpServer.Handler = mux
 
 	grpcDone := make(chan error, 1)
 	go func() {
@@ -98,25 +101,4 @@ func (s *Server) GracefulStop() error {
 		return s.httpServer.Shutdown(context.Background())
 	}
 	return nil
-}
-
-// Status retrieves the status of the Go Daemon server.
-func (s *Server) Status(
-	_ context.Context,
-	_ *pb.StatusRequest,
-) (*pb.StatusReply, error) {
-	pid := os.Getpid()
-	if pid < 0 || pid > math.MaxUint32 {
-		return nil, fmt.Errorf("invalid PID: %d", pid)
-	}
-	pidu := uint32(pid)
-	apiBaseURL := fmt.Sprintf("http://%s/api", s.httpServerAddr)
-	return &pb.StatusReply{
-		Process: &pb.ServerProcess{
-			Pid: &pidu,
-		},
-		Urls: &pb.ServerUrls{
-			ApiBaseUrl: &apiBaseURL,
-		},
-	}, nil
 }

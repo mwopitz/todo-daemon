@@ -9,14 +9,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/mwopitz/go-daemon/daemon"
+	pb "github.com/mwopitz/go-daemon/internal/protogen"
 )
 
 // Client is used for communicating with the Go Daemon server.
 type Client struct {
 	logger *log.Logger
 	conn   *grpc.ClientConn
-	daemon pb.DaemonClient
+	daemon pb.TodoDaemonClient
 }
 
 // NewClient creates a Go Daemon client and connects it to the server listening
@@ -33,7 +33,7 @@ func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 	return &Client{
 		logger: cmp.Or(logger, log.Default()),
 		conn:   conn,
-		daemon: pb.NewDaemonClient(conn),
+		daemon: pb.NewTodoDaemonClient(conn),
 	}, nil
 }
 
@@ -46,6 +46,6 @@ func (c *Client) Close() error {
 }
 
 // ServerStatus retrieves the address of the Go Daemon server.
-func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusReply, error) {
-	return c.daemon.Status(ctx, &pb.StatusRequest{})
+func (c *Client) ServerStatus(ctx context.Context) (*pb.GetStatusResponse, error) {
+	return c.daemon.GetStatus(ctx, &pb.GetStatusRequest{})
 }

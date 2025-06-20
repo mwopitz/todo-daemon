@@ -1,8 +1,0 @@
-edition = "2023";
-
-option go_package = "github.com/mwopitz/go-daemon/daemon";
-
-// The URLs provided by the go-daemon server.
-message ServerUrls {
-  string api_base_url = 1;
-}

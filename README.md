@@ -1,11 +1,11 @@
-# Go Daemon
+# To-do Daemon
 
 This repository contains a proof of concept for a [daemon][daemon]-like service
 created with [Go][go] that provides both a [command-line interface][cli] (CLI)
 as well as a [REST][rest] API. It's designed to run user scoped (not as `root`)
 on a desktop client.
 
-The Go Daemon *does not* behave like a traditional [SysV daemon][sysv-daemon];
+The To-do Daemon does not behave like a traditional [SysV daemon][sysv-daemon];
 it doesn't call `fork` to detach itself from the parent process. Instead, the
 Go Daemon behaves more like a [new-style daemon][systemd-daemon], as defined by
 systemd.
@@ -62,11 +62,15 @@ with the daemon process.
 1.  Install the Go plugins for the protobuf compiler:
     
     ```sh
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+    go tool install
     ```
 1.  Execute the compiler:
     
     ```sh
-    protoc --proto_path=./daemon --go_out module=github.com/mwopitz/go-daemon:. --go-grpc_out module=github.com/mwopitz/go-daemon:. ./daemon/*.proto
+    protoc --proto_path=./api/proto \
+      --go_out module=github.com/mwopitz/go-daemon:. \
+      --go-grpc_out module=github.com/mwopitz/go-daemon:. \
+      --grpc-gateway_out module=github.com/mwopitz/go-daemon:. \
+      --grpc-gateway_opt generate_unbound_methods=true \
+      ./api/proto/todo_daemon.proto
     ```

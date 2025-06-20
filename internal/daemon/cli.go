@@ -148,9 +148,6 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	if pid := status.GetProcess().GetPid(); pid > 0 {
 		fmt.Printf("pid: %d\n", pid)
 	}
-	if u := status.GetUrls().GetApiBaseUrl(); u != "" {
-		fmt.Printf("api_base_url: %s\n", u)
-	}
 	return nil
 }
 

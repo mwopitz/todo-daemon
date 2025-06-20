@@ -1,7 +1,7 @@
-// The program go-daemon can either run as the Go Daemon server or connect to a
-// running Go Daemon server instance as a client. It provides a command-line
-// interface that allows users to specify whether to run the Go Daemon in server
-// or client mode.
+// The program todo-daemon can either run as the To-do Daemon server or connect
+// to a running To-do Daemon server instance as a client. It provides a
+// command-line interface that allows users to specify whether to run the To-do
+// Daemon in server mode or client mode.
 package main
 
 import (
@@ -15,7 +15,7 @@ import (
 	"github.com/mwopitz/go-daemon/internal/daemon"
 )
 
-// Version is the version of the Go Daemon.
+// Version is the version of the To-do Daemon.
 var Version = "0.0.0"
 
 func main() {

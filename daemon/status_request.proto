@@ -1,6 +1,0 @@
-edition = "2023";
-
-option go_package = "github.com/mwopitz/go-daemon/daemon";
-
-// Options for querying the status of the daemon server.
-message StatusRequest {}
