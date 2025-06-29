@@ -19,19 +19,22 @@ by systemd.
 
 ## Architecture
 
-![Architecture diagram](docs/architecure.svg)
+![Architecture diagram](docs/architecture.svg)
 
-The To-do Daemon has one primary process, the daemon process, and zero or more
+The To-do Daemon has one primary process, the server process, and zero or more
 secondary command processes.
 
-The daemon process runs two servers:
+The server process runs two servers:
 
-* An HTTP server that provides a REST API to other applications.
+* An HTTP server that provides a REST API to other applications. The HTTP server
+  listens on `localhost` plus some random free port.
 * A [gRPC](https://grpc.io/) server that is used for internal communication
-  between the daemon process and the command processes.
+  between the server process and the command processes. The gRPC server listens
+  on a Unix socket at a stable path. (`/run/user/$UID/todo-daemon.sock` on
+  Linux, `%TEMP%\todo-daemon.sock` on Windows.)
 
 The command processes provide a command-line interface (CLI) for interacting
-with the daemon process.
+with the server process.
 
 ## Getting started
 
