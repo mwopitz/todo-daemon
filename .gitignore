@@ -10,7 +10,7 @@
 *.so
 *.dylib
 *.zip
-go-daemon
+todo-daemon
 
 # Test binary, built with `go test -c`
 *.test

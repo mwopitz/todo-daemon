@@ -9,18 +9,18 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/mwopitz/go-daemon/internal/protogen"
+	pb "github.com/mwopitz/todo-daemon/internal/protogen"
 )
 
-// Client is used for communicating with the Go Daemon server.
+// Client is used for communicating with the To-do Daemon server.
 type Client struct {
 	logger *log.Logger
 	conn   *grpc.ClientConn
 	daemon pb.TodoDaemonClient
 }
 
-// NewClient creates a Go Daemon client and connects it to the server listening
-// on the specified network address.
+// NewClient creates a To-do Daemon client and connects it to the server
+// listening on the specified network address.
 func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 	target := fmt.Sprintf("%s:%s", network, address)
 	conn, err := grpc.NewClient(
@@ -37,7 +37,7 @@ func NewClient(network, address string, logger *log.Logger) (*Client, error) {
 	}, nil
 }
 
-// Close closes the connection to the Go Daemon server.
+// Close closes the connection to the To-do Daemon server.
 func (c *Client) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
@@ -45,7 +45,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// ServerStatus retrieves the address of the Go Daemon server.
-func (c *Client) ServerStatus(ctx context.Context) (*pb.GetStatusResponse, error) {
+// ServerStatus retrieves the address of the To-do Daemon server.
+func (c *Client) ServerStatus(ctx context.Context) (*pb.Status, error) {
 	return c.daemon.GetStatus(ctx, &pb.GetStatusRequest{})
 }

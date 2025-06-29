@@ -13,11 +13,11 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// ErrAlreadyRunning is returned by [CLI.Run] when executing the run command
-// while the Go Daemon server is already running.
+// ErrAlreadyRunning is returned by [CLI.Exec] when executing the run command
+// while the To-do Daemon server is already running.
 var ErrAlreadyRunning = errors.New("another instance is already running")
 
-// CLI implements the command-line interface of the Go Daemon.
+// CLI implements the command-line interface of the To-do Daemon.
 type CLI struct {
 	logger  *log.Logger
 	rootCmd *cli.Command
@@ -29,13 +29,13 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 	c := &CLI{}
 	c.logger = cmp.Or(logger, log.Default())
 	c.rootCmd = &cli.Command{
-		Name:  "go-daemon",
-		Usage: "A simple daemon server in Go",
+		Name:    "go-daemon",
+		Usage:   "A simple daemon server in Go",
 		Version: version,
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
-				Usage: "Run the Go Daemon server",
+				Usage: "Run the To-do Daemon server",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:      "lock",
@@ -48,12 +48,12 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 			},
 			{
 				Name:   "status",
-				Usage:  "Print the status of the Go Daemon server",
+				Usage:  "Print the status of the To-do Daemon server",
 				Action: c.printServerStatus,
 			},
 			{
-				Name: "version",
-				Usage: "Print the version of the Go Daemon",
+				Name:   "version",
+				Usage:  "Print the version of the To-do Daemon",
 				Action: c.printVersion,
 			},
 		},
@@ -69,8 +69,8 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 	return c
 }
 
-// Run executes the CLI command specified by the given arguments.
-func (c *CLI) Run(ctx context.Context, args []string) error {
+// Exec executes the CLI command specified by the given arguments.
+func (c *CLI) Exec(ctx context.Context, args []string) error {
 	return c.rootCmd.Run(ctx, args)
 }
 
@@ -78,7 +78,7 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	lockFile := cmd.String("lock")
 	sockFile := cmd.String("sock")
 
-	err := os.MkdirAll(filepath.Dir(lockFile), 0700)
+	err := os.MkdirAll(filepath.Dir(lockFile), 0o700)
 	if err != nil {
 		return fmt.Errorf("cannot acquire file lock: %w", err)
 	}
@@ -91,13 +91,13 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return ErrAlreadyRunning
 	}
 	defer func() {
-		if err := lock.Unlock(); err != nil {
-			c.logger.Printf("cannot release file lock: %v", err)
+		if e := lock.Unlock(); e != nil {
+			c.logger.Printf("cannot release file lock: %v", e)
 		}
 	}()
 	c.logger.Printf("acquired file lock %s", lockFile)
 
-	err = os.MkdirAll(filepath.Dir(sockFile), 0700)
+	err = os.MkdirAll(filepath.Dir(sockFile), 0o700)
 	if err != nil {
 		return fmt.Errorf("cannot create socket directory: %w", err)
 	}
@@ -105,8 +105,8 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
-	// Create the Go Daemon server and run it in a separate goroutine, so we can
-	// wait for either the server to stop or ctx.Done is closed.
+	// Create the To-do Daemon server and run it in a separate goroutine, so we
+	// can wait until either the server stops or the context gets canceled.
 	srv := NewServer(c.logger)
 	done := make(chan error, 1)
 	go func() {
@@ -114,7 +114,6 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		close(done)
 	}()
 
-	// Wait until either the server stops or the context gets canceled.
 	select {
 	case <-ctx.Done():
 		err := ctx.Err()
@@ -136,8 +135,8 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 	defer func() {
-		if err := client.Close(); err != nil {
-			c.logger.Printf("cannot close client: %v", err)
+		if e := client.Close(); e != nil {
+			c.logger.Printf("cannot close client: %v", e)
 		}
 	}()
 
@@ -146,7 +145,10 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("cannot get status: %w", err)
 	}
 	if pid := status.GetProcess().GetPid(); pid > 0 {
-		fmt.Printf("pid: %d\n", pid)
+		fmt.Printf("pid=%d\n", pid)
+	}
+	if apiBaseURL := status.GetServer().GetApiBaseUrl(); apiBaseURL != "" {
+		fmt.Printf("api_base_url=%s\n", apiBaseURL)
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package todo
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"slices"
 	"strconv"
@@ -10,72 +9,73 @@ import (
 	"time"
 )
 
-type TaskNotFoundError struct {
-	ID string
-}
-
-func NewNoSuchTaskError(id string) *TaskNotFoundError {
-	return &TaskNotFoundError{ID: id}
-}
-
-func (e *TaskNotFoundError) Error() string {
-	return fmt.Sprintf("no such task: %s", e.ID)
-}
-
+// TaskRepository defines functions for querying and persisting [Task]s.
 type TaskRepository interface {
-	GetTasks(ctx context.Context) ([]Task, error)
-	CreateTask(ctx context.Context, task NewTask) (*Task, error)
-	UpdateTask(ctx context.Context, update TaskUpdate) (*Task, error)
-	DeleteTask(ctx context.Context, id string) error
+	// All retrieves all tasks from the repository.
+	All(ctx context.Context) (Tasks, error)
+	// Create adds a new task to the repository.
+	Create(ctx context.Context, task TaskCreate) (*Task, error)
+	// Update modifies an existing task in the repository.
+	Update(ctx context.Context, task TaskUpdate) (*Task, error)
+	// Delete removes an existing task from the repository.
+	Delete(ctx context.Context, id string) error
 }
 
-type InMemoryTaskDatabase struct {
-	mu sync.Mutex
+// InMemoryTaskDB is an in-memory implementation of [TaskRepository]. It just
+// stores tasks in a map.
+type InMemoryTaskDB struct {
+	mu    sync.Mutex
 	tasks map[string]Task
 }
 
-func NewInMemoryTaskDatabase() *InMemoryTaskDatabase {
-	return &InMemoryTaskDatabase{
+// NewInMemoryTaskDB creates a new instance of [InMemoryTaskDB] with an empty
+// map of tasks.
+func NewInMemoryTaskDB() *InMemoryTaskDB {
+	return &InMemoryTaskDB{
 		tasks: make(map[string]Task),
 	}
 }
 
-func (db *InMemoryTaskDatabase) GetTasks(_ context.Context) ([]Task, error) {
+// All returns all tasks stored in the task map.
+func (db *InMemoryTaskDB) All(_ context.Context) (Tasks, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	return slices.Collect(maps.Values(db.tasks)), nil
 }
 
-func (db *InMemoryTaskDatabase) CreateTask(_ context.Context, task NewTask) (*Task, error) {
+// Create adds a new task to the task map.
+func (db *InMemoryTaskDB) Create(_ context.Context, task TaskCreate) (*Task, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	t := Task{
-		ID: strconv.Itoa(len(db.tasks) + 1),
-		Summary: task.Summary,
+		ID:        strconv.Itoa(len(db.tasks) + 1),
+		Summary:   task.Summary,
 		CreatedAt: time.Now(),
 	}
 	db.tasks[t.ID] = t
 	return &t, nil
 }
 
-func (db *InMemoryTaskDatabase) UpdateTask(_ context.Context, update TaskUpdate) (*Task, error) {
+// Update modifies an existing task in the task map
+func (db *InMemoryTaskDB) Update(_ context.Context, task TaskUpdate) (*Task, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	t, ok := db.tasks[update.ID]
+	t, ok := db.tasks[task.ID]
 	if !ok {
-		return nil, NewNoSuchTaskError(update.ID)
+		return nil, NewTaskNotFoundError(task.ID)
 	}
-	t.Summary = update.Summary
+	t.Summary = task.Summary
 	db.tasks[t.ID] = t
 	return &t, nil
 }
 
-func (db *InMemoryTaskDatabase) DeleteTask(_ context.Context, id string) error {
+// Delete removes a task from the task map by its ID.
+func (db *InMemoryTaskDB) Delete(_ context.Context, id string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	_, ok := db.tasks[id]
 	if !ok {
-		return NewNoSuchTaskError(id)
+		return NewTaskNotFoundError(id)
 	}
 	delete(db.tasks, id)
 	return nil

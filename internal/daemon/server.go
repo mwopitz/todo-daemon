@@ -8,32 +8,42 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	pb "github.com/mwopitz/go-daemon/internal/protogen"
-	"github.com/mwopitz/go-daemon/internal/todo"
+	pb "github.com/mwopitz/todo-daemon/internal/protogen"
+	"github.com/mwopitz/todo-daemon/internal/todo"
 	"google.golang.org/grpc"
 )
 
-// Server implements the server of the Go Daemon. It runs both an HTTP server,
+// Server implements the server of the To-do Daemon. It runs both an HTTP server,
 // which provides a REST API to external applications, as well as a gRPC server,
-// which is used for internal communication between the Go Daemon processes.
+// which is used for internal communication between the To-do Daemon processes.
 type Server struct {
-	logger         *log.Logger
-	grpcServer     *grpc.Server
-	httpServer     *http.Server
+	logger     *log.Logger
+	grpcServer *grpc.Server
+	httpServer *http.Server
 }
 
-// NewServer creates a new Go Daemon server with an optional logger. If no
+// NewServer creates a new To-do Daemon server with an optional logger. If no
 // logger is provided, it the server uses [log.Default].
 func NewServer(logger *log.Logger) *Server {
-	grpcServer := grpc.NewServer()
-	httpServer := &http.Server{}
-	return &Server{
+	db := todo.NewInMemoryTaskDB()
+	ctrl := todo.NewController(db, logger)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/v1/tasks", ctrl.GetTasks)
+	mux.HandleFunc("POST /api/v1/tasks", ctrl.CreateTask)
+	mux.HandleFunc("PATCH /api/v1/tasks/{id}", ctrl.UpdateTask)
+
+	s := &Server{
 		logger:     cmp.Or(logger, log.Default()),
-		grpcServer: grpcServer,
-		httpServer: httpServer,
+		grpcServer: grpc.NewServer(),
+		httpServer: &http.Server{
+			Handler: mux,
+		},
 	}
+	return s
 }
 
 // Serve starts both the underlying HTTP server and gRPC server. The specified
@@ -52,17 +62,22 @@ func (s *Server) Serve(network, address string) error {
 		return fmt.Errorf("cannot start HTTP server: %w", err)
 	}
 
-	s.logger.Printf("HTTP server listening on %s", httpListener.Addr())
+	httpAddr := httpListener.Addr()
+	s.logger.Printf("HTTP server listening on %s", httpAddr)
 
-	mux := runtime.NewServeMux()
-	taskdb := todo.NewInMemoryTaskDatabase()
-	svc := todo.NewTaskService(taskdb)
-	ctrl := todo.NewController(svc, s.logger)
-
-	pb.RegisterTodoDaemonServer(s.grpcServer, ctrl)
-	pb.RegisterTodoDaemonHandlerServer(context.Background(), mux, ctrl)
-
-	s.httpServer.Handler = mux
+	status := func(_ context.Context) (*serverStatus, error) {
+		u := url.URL{
+			Scheme: "http",
+			Host:   httpAddr.String(),
+			Path:   "/api",
+		}
+		return &serverStatus{
+			pid:        os.Getpid(),
+			apiBaseURL: u.String(),
+		}, nil
+	}
+	grpcController := newController(serverStatusProviderFunc(status), s.logger)
+	pb.RegisterTodoDaemonServer(s.grpcServer, grpcController)
 
 	grpcDone := make(chan error, 1)
 	go func() {

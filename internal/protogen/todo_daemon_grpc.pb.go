@@ -8,7 +8,6 @@ package protogen
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,11 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TodoDaemon_GetStatus_FullMethodName  = "/mwopitz.todo_daemon.v1.TodoDaemon/GetStatus"
-	TodoDaemon_GetTasks_FullMethodName   = "/mwopitz.todo_daemon.v1.TodoDaemon/GetTasks"
-	TodoDaemon_CreateTask_FullMethodName = "/mwopitz.todo_daemon.v1.TodoDaemon/CreateTask"
-	TodoDaemon_UpdateTask_FullMethodName = "/mwopitz.todo_daemon.v1.TodoDaemon/UpdateTask"
-	TodoDaemon_DeleteTask_FullMethodName = "/mwopitz.todo_daemon.v1.TodoDaemon/DeleteTask"
+	TodoDaemon_GetStatus_FullMethodName = "/mwopitz.todo.v1.TodoDaemon/GetStatus"
 )
 
 // TodoDaemonClient is the client API for TodoDaemon service.
@@ -33,16 +28,8 @@ const (
 //
 // The gRPC interface of the To-do Daemon.
 type TodoDaemonClient interface {
-	// Queries the status of the To-do Daemon server.
-	GetStatus(ctx context.Context, in *GetStatusRequest, opts ...grpc.CallOption) (*GetStatusResponse, error)
-	// Queries tasks in the to-do list.
-	GetTasks(ctx context.Context, in *GetTasksRequest, opts ...grpc.CallOption) (*GetTasksResponse, error)
-	// Creates a new task in the to-do list.
-	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
-	// Updates an existing task in the to-do list.
-	UpdateTask(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*UpdateTaskResponse, error)
-	// Deletes an existing task in the to-do list.
-	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*DeleteTaskResponse, error)
+	// Queries the status of the To-do Daemon.
+	GetStatus(ctx context.Context, in *GetStatusRequest, opts ...grpc.CallOption) (*Status, error)
 }
 
 type todoDaemonClient struct {
@@ -53,50 +40,10 @@ func NewTodoDaemonClient(cc grpc.ClientConnInterface) TodoDaemonClient {
 	return &todoDaemonClient{cc}
 }
 
-func (c *todoDaemonClient) GetStatus(ctx context.Context, in *GetStatusRequest, opts ...grpc.CallOption) (*GetStatusResponse, error) {
+func (c *todoDaemonClient) GetStatus(ctx context.Context, in *GetStatusRequest, opts ...grpc.CallOption) (*Status, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetStatusResponse)
+	out := new(Status)
 	err := c.cc.Invoke(ctx, TodoDaemon_GetStatus_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoDaemonClient) GetTasks(ctx context.Context, in *GetTasksRequest, opts ...grpc.CallOption) (*GetTasksResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetTasksResponse)
-	err := c.cc.Invoke(ctx, TodoDaemon_GetTasks_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoDaemonClient) CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateTaskResponse)
-	err := c.cc.Invoke(ctx, TodoDaemon_CreateTask_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoDaemonClient) UpdateTask(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*UpdateTaskResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateTaskResponse)
-	err := c.cc.Invoke(ctx, TodoDaemon_UpdateTask_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoDaemonClient) DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*DeleteTaskResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteTaskResponse)
-	err := c.cc.Invoke(ctx, TodoDaemon_DeleteTask_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,16 +56,8 @@ func (c *todoDaemonClient) DeleteTask(ctx context.Context, in *DeleteTaskRequest
 //
 // The gRPC interface of the To-do Daemon.
 type TodoDaemonServer interface {
-	// Queries the status of the To-do Daemon server.
-	GetStatus(context.Context, *GetStatusRequest) (*GetStatusResponse, error)
-	// Queries tasks in the to-do list.
-	GetTasks(context.Context, *GetTasksRequest) (*GetTasksResponse, error)
-	// Creates a new task in the to-do list.
-	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
-	// Updates an existing task in the to-do list.
-	UpdateTask(context.Context, *UpdateTaskRequest) (*UpdateTaskResponse, error)
-	// Deletes an existing task in the to-do list.
-	DeleteTask(context.Context, *DeleteTaskRequest) (*DeleteTaskResponse, error)
+	// Queries the status of the To-do Daemon.
+	GetStatus(context.Context, *GetStatusRequest) (*Status, error)
 	mustEmbedUnimplementedTodoDaemonServer()
 }
 
@@ -129,20 +68,8 @@ type TodoDaemonServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTodoDaemonServer struct{}
 
-func (UnimplementedTodoDaemonServer) GetStatus(context.Context, *GetStatusRequest) (*GetStatusResponse, error) {
+func (UnimplementedTodoDaemonServer) GetStatus(context.Context, *GetStatusRequest) (*Status, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
-}
-func (UnimplementedTodoDaemonServer) GetTasks(context.Context, *GetTasksRequest) (*GetTasksResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTasks not implemented")
-}
-func (UnimplementedTodoDaemonServer) CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateTask not implemented")
-}
-func (UnimplementedTodoDaemonServer) UpdateTask(context.Context, *UpdateTaskRequest) (*UpdateTaskResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateTask not implemented")
-}
-func (UnimplementedTodoDaemonServer) DeleteTask(context.Context, *DeleteTaskRequest) (*DeleteTaskResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
 }
 func (UnimplementedTodoDaemonServer) mustEmbedUnimplementedTodoDaemonServer() {}
 func (UnimplementedTodoDaemonServer) testEmbeddedByValue()                    {}
@@ -183,104 +110,16 @@ func _TodoDaemon_GetStatus_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TodoDaemon_GetTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTasksRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoDaemonServer).GetTasks(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoDaemon_GetTasks_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoDaemonServer).GetTasks(ctx, req.(*GetTasksRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoDaemon_CreateTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateTaskRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoDaemonServer).CreateTask(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoDaemon_CreateTask_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoDaemonServer).CreateTask(ctx, req.(*CreateTaskRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoDaemon_UpdateTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateTaskRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoDaemonServer).UpdateTask(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoDaemon_UpdateTask_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoDaemonServer).UpdateTask(ctx, req.(*UpdateTaskRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoDaemon_DeleteTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteTaskRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoDaemonServer).DeleteTask(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoDaemon_DeleteTask_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoDaemonServer).DeleteTask(ctx, req.(*DeleteTaskRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // TodoDaemon_ServiceDesc is the grpc.ServiceDesc for TodoDaemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TodoDaemon_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "mwopitz.todo_daemon.v1.TodoDaemon",
+	ServiceName: "mwopitz.todo.v1.TodoDaemon",
 	HandlerType: (*TodoDaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetStatus",
 			Handler:    _TodoDaemon_GetStatus_Handler,
-		},
-		{
-			MethodName: "GetTasks",
-			Handler:    _TodoDaemon_GetTasks_Handler,
-		},
-		{
-			MethodName: "CreateTask",
-			Handler:    _TodoDaemon_CreateTask_Handler,
-		},
-		{
-			MethodName: "UpdateTask",
-			Handler:    _TodoDaemon_UpdateTask_Handler,
-		},
-		{
-			MethodName: "DeleteTask",
-			Handler:    _TodoDaemon_DeleteTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

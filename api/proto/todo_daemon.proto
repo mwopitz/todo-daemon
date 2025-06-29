@@ -1,78 +1,30 @@
 syntax = "proto3";
 
-package mwopitz.todo_daemon.v1;
+package mwopitz.todo.v1;
 
-option go_package = "github.com/mwopitz/go-daemon/internal/protogen";
-
-import "google/protobuf/field_mask.proto";
-import "google/protobuf/timestamp.proto";
+option go_package = "github.com/mwopitz/todo-daemon/internal/protogen";
 
 // The gRPC interface of the To-do Daemon.
 service TodoDaemon {
-  // Queries the status of the To-do Daemon server.
-  rpc GetStatus (GetStatusRequest) returns (GetStatusResponse) {}
-  // Queries tasks in the to-do list.
-  rpc GetTasks(GetTasksRequest) returns (GetTasksResponse) {}
-  // Creates a new task in the to-do list.
-  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {}
-  // Updates an existing task in the to-do list.
-  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse) {}
-  // Deletes an existing task in the to-do list.
-  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {}
+  // Queries the status of the To-do Daemon.
+  rpc GetStatus (GetStatusRequest) returns (Status) {}
 }
 
-message Process {
+// Options for querying the status of the To-do Daemon.
+message GetStatusRequest {}
+
+// The status of the To-do Daemon.
+message Status {
+  ProcessStatus process = 1;
+  ServerStatus server = 2;
+}
+
+// The status of the To-do Daemon process.
+message ProcessStatus {
   uint32 pid = 1;
 }
 
-message Task {
-  string id = 1;
-  string summary = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
-  google.protobuf.Timestamp completed_at = 5;
+// The status of the To-do Daemon server.
+message ServerStatus {
+  string api_base_url = 1;
 }
-
-message NewTask {
-  string summary = 1;
-}
-
-message TaskUpdate {
-  string id = 1;
-  string summary = 2;
-}
-
-message GetStatusRequest {}
-
-message GetStatusResponse {
-  Process process = 1;
-}
-
-message GetTasksRequest {}
-
-message GetTasksResponse {
-  repeated Task tasks = 1;
-}
-
-message CreateTaskRequest {
-  NewTask task = 1;
-}
-
-message CreateTaskResponse {
-  Task task = 1;
-}
-
-message UpdateTaskRequest {
-  TaskUpdate update = 1;
-  google.protobuf.FieldMask update_mask = 2;
-}
-
-message UpdateTaskResponse {
-  Task result = 1;
-}
-
-message DeleteTaskRequest {
-  string id = 1;
-}
-
-message DeleteTaskResponse {}

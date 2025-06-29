@@ -1,0 +1,37 @@
+package todo
+
+import (
+	"errors"
+	"fmt"
+)
+
+// TaskNotFoundError should be returned by [TaskRepository.Update] and
+// [TaskRepository.Delete] when the task with the specified ID does not exist.
+type TaskNotFoundError struct {
+	// ID is the ID of the task that was not found.
+	ID string
+}
+
+// NewTaskNotFoundError creates a [TaskNotFoundError] for the task with the
+// specified ID.
+func NewTaskNotFoundError(id string) *TaskNotFoundError {
+	return &TaskNotFoundError{ID: id}
+}
+
+// IsTaskNotFoundError checks if the provided error is a [TaskNotFoundError].
+func IsTaskNotFoundError(err error) bool {
+	var e *TaskNotFoundError
+	return err != nil && errors.As(err, &e)
+}
+
+func (e *TaskNotFoundError) Error() string {
+	return fmt.Sprintf("no such task: %s", e.ID)
+}
+
+type errorDTO struct {
+	Message string `json:"message"`
+}
+
+func newErrorDTO(format string, a ...any) *errorDTO {
+	return &errorDTO{fmt.Sprintf(format, a...)}
+}

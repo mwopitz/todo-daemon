@@ -7,8 +7,8 @@ on a desktop client.
 
 The To-do Daemon does not behave like a traditional [SysV daemon][sysv-daemon];
 it doesn't call `fork` to detach itself from the parent process. Instead, the
-Go Daemon behaves more like a [new-style daemon][systemd-daemon], as defined by
-systemd.
+To-do Daemon behaves more like a [new-style daemon][systemd-daemon], as defined
+by systemd.
 
 [cli]: https://en.wikipedia.org/wiki/Command-line_interface
 [daemon]: https://en.wikipedia.org/wiki/Daemon_(computing)
@@ -21,7 +21,7 @@ systemd.
 
 ![Architecture diagram](docs/architecure.svg)
 
-The Go Daemon has one primary process, the daemon process, and zero or more
+The To-do Daemon has one primary process, the daemon process, and zero or more
 secondary command processes.
 
 The daemon process runs two servers:
@@ -68,9 +68,7 @@ with the daemon process.
     
     ```sh
     protoc --proto_path=./api/proto \
-      --go_out module=github.com/mwopitz/go-daemon:. \
-      --go-grpc_out module=github.com/mwopitz/go-daemon:. \
-      --grpc-gateway_out module=github.com/mwopitz/go-daemon:. \
-      --grpc-gateway_opt generate_unbound_methods=true \
+      --go_out module=github.com/mwopitz/todo-daemon:. \
+      --go-grpc_out module=github.com/mwopitz/todo-daemon:. \
       ./api/proto/todo_daemon.proto
     ```

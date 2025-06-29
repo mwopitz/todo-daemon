@@ -12,7 +12,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mwopitz/go-daemon/internal/daemon"
+	"github.com/mwopitz/todo-daemon/internal/daemon"
 )
 
 // Version is the version of the To-do Daemon.
@@ -27,7 +27,7 @@ func main() {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		errchan <- cli.Run(ctx, os.Args)
+		errchan <- cli.Exec(ctx, os.Args)
 		close(errchan)
 	}()
 

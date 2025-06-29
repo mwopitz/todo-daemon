@@ -9,8 +9,6 @@ package protogen
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -23,222 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Process struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pid           uint32                 `protobuf:"varint,1,opt,name=pid,proto3" json:"pid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Process) Reset() {
-	*x = Process{}
-	mi := &file_todo_daemon_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Process) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Process) ProtoMessage() {}
-
-func (x *Process) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Process.ProtoReflect.Descriptor instead.
-func (*Process) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Process) GetPid() uint32 {
-	if x != nil {
-		return x.Pid
-	}
-	return 0
-}
-
-type Task struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Summary       string                 `protobuf:"bytes,2,opt,name=summary,proto3" json:"summary,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Task) Reset() {
-	*x = Task{}
-	mi := &file_todo_daemon_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Task) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Task) ProtoMessage() {}
-
-func (x *Task) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Task.ProtoReflect.Descriptor instead.
-func (*Task) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Task) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Task) GetSummary() string {
-	if x != nil {
-		return x.Summary
-	}
-	return ""
-}
-
-func (x *Task) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Task) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-func (x *Task) GetCompletedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CompletedAt
-	}
-	return nil
-}
-
-type NewTask struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Summary       string                 `protobuf:"bytes,1,opt,name=summary,proto3" json:"summary,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *NewTask) Reset() {
-	*x = NewTask{}
-	mi := &file_todo_daemon_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *NewTask) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NewTask) ProtoMessage() {}
-
-func (x *NewTask) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NewTask.ProtoReflect.Descriptor instead.
-func (*NewTask) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *NewTask) GetSummary() string {
-	if x != nil {
-		return x.Summary
-	}
-	return ""
-}
-
-type TaskUpdate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Summary       string                 `protobuf:"bytes,2,opt,name=summary,proto3" json:"summary,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TaskUpdate) Reset() {
-	*x = TaskUpdate{}
-	mi := &file_todo_daemon_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TaskUpdate) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TaskUpdate) ProtoMessage() {}
-
-func (x *TaskUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TaskUpdate.ProtoReflect.Descriptor instead.
-func (*TaskUpdate) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *TaskUpdate) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *TaskUpdate) GetSummary() string {
-	if x != nil {
-		return x.Summary
-	}
-	return ""
-}
-
+// Options for querying the status of the To-do Daemon.
 type GetStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -247,7 +30,7 @@ type GetStatusRequest struct {
 
 func (x *GetStatusRequest) Reset() {
 	*x = GetStatusRequest{}
-	mi := &file_todo_daemon_proto_msgTypes[4]
+	mi := &file_todo_daemon_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -259,7 +42,7 @@ func (x *GetStatusRequest) String() string {
 func (*GetStatusRequest) ProtoMessage() {}
 
 func (x *GetStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[4]
+	mi := &file_todo_daemon_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -272,31 +55,33 @@ func (x *GetStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetStatusRequest) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{4}
+	return file_todo_daemon_proto_rawDescGZIP(), []int{0}
 }
 
-type GetStatusResponse struct {
+// The status of the To-do Daemon.
+type Status struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Process       *Process               `protobuf:"bytes,1,opt,name=process,proto3" json:"process,omitempty"`
+	Process       *ProcessStatus         `protobuf:"bytes,1,opt,name=process,proto3" json:"process,omitempty"`
+	Server        *ServerStatus          `protobuf:"bytes,2,opt,name=server,proto3" json:"server,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetStatusResponse) Reset() {
-	*x = GetStatusResponse{}
-	mi := &file_todo_daemon_proto_msgTypes[5]
+func (x *Status) Reset() {
+	*x = Status{}
+	mi := &file_todo_daemon_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetStatusResponse) String() string {
+func (x *Status) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetStatusResponse) ProtoMessage() {}
+func (*Status) ProtoMessage() {}
 
-func (x *GetStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[5]
+func (x *Status) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_daemon_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -307,120 +92,48 @@ func (x *GetStatusResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetStatusResponse.ProtoReflect.Descriptor instead.
-func (*GetStatusResponse) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{5}
+// Deprecated: Use Status.ProtoReflect.Descriptor instead.
+func (*Status) Descriptor() ([]byte, []int) {
+	return file_todo_daemon_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetStatusResponse) GetProcess() *Process {
+func (x *Status) GetProcess() *ProcessStatus {
 	if x != nil {
 		return x.Process
 	}
 	return nil
 }
 
-type GetTasksRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTasksRequest) Reset() {
-	*x = GetTasksRequest{}
-	mi := &file_todo_daemon_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTasksRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTasksRequest) ProtoMessage() {}
-
-func (x *GetTasksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[6]
+func (x *Status) GetServer() *ServerStatus {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTasksRequest.ProtoReflect.Descriptor instead.
-func (*GetTasksRequest) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{6}
-}
-
-type GetTasksResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Tasks         []*Task                `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTasksResponse) Reset() {
-	*x = GetTasksResponse{}
-	mi := &file_todo_daemon_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTasksResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTasksResponse) ProtoMessage() {}
-
-func (x *GetTasksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTasksResponse.ProtoReflect.Descriptor instead.
-func (*GetTasksResponse) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *GetTasksResponse) GetTasks() []*Task {
-	if x != nil {
-		return x.Tasks
+		return x.Server
 	}
 	return nil
 }
 
-type CreateTaskRequest struct {
+// The status of the To-do Daemon process.
+type ProcessStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Task          *NewTask               `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	Pid           uint32                 `protobuf:"varint,1,opt,name=pid,proto3" json:"pid,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateTaskRequest) Reset() {
-	*x = CreateTaskRequest{}
-	mi := &file_todo_daemon_proto_msgTypes[8]
+func (x *ProcessStatus) Reset() {
+	*x = ProcessStatus{}
+	mi := &file_todo_daemon_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateTaskRequest) String() string {
+func (x *ProcessStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateTaskRequest) ProtoMessage() {}
+func (*ProcessStatus) ProtoMessage() {}
 
-func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[8]
+func (x *ProcessStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_daemon_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -431,40 +144,41 @@ func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateTaskRequest.ProtoReflect.Descriptor instead.
-func (*CreateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use ProcessStatus.ProtoReflect.Descriptor instead.
+func (*ProcessStatus) Descriptor() ([]byte, []int) {
+	return file_todo_daemon_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreateTaskRequest) GetTask() *NewTask {
+func (x *ProcessStatus) GetPid() uint32 {
 	if x != nil {
-		return x.Task
+		return x.Pid
 	}
-	return nil
+	return 0
 }
 
-type CreateTaskResponse struct {
+// The status of the To-do Daemon server.
+type ServerStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Task          *Task                  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	ApiBaseUrl    string                 `protobuf:"bytes,1,opt,name=api_base_url,json=apiBaseUrl,proto3" json:"api_base_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateTaskResponse) Reset() {
-	*x = CreateTaskResponse{}
-	mi := &file_todo_daemon_proto_msgTypes[9]
+func (x *ServerStatus) Reset() {
+	*x = ServerStatus{}
+	mi := &file_todo_daemon_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateTaskResponse) String() string {
+func (x *ServerStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateTaskResponse) ProtoMessage() {}
+func (*ServerStatus) ProtoMessage() {}
 
-func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[9]
+func (x *ServerStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_daemon_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -475,244 +189,35 @@ func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateTaskResponse.ProtoReflect.Descriptor instead.
-func (*CreateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{9}
+// Deprecated: Use ServerStatus.ProtoReflect.Descriptor instead.
+func (*ServerStatus) Descriptor() ([]byte, []int) {
+	return file_todo_daemon_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreateTaskResponse) GetTask() *Task {
+func (x *ServerStatus) GetApiBaseUrl() string {
 	if x != nil {
-		return x.Task
-	}
-	return nil
-}
-
-type UpdateTaskRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Update        *TaskUpdate            `protobuf:"bytes,1,opt,name=update,proto3" json:"update,omitempty"`
-	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateTaskRequest) Reset() {
-	*x = UpdateTaskRequest{}
-	mi := &file_todo_daemon_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTaskRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTaskRequest) ProtoMessage() {}
-
-func (x *UpdateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTaskRequest.ProtoReflect.Descriptor instead.
-func (*UpdateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *UpdateTaskRequest) GetUpdate() *TaskUpdate {
-	if x != nil {
-		return x.Update
-	}
-	return nil
-}
-
-func (x *UpdateTaskRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
-	if x != nil {
-		return x.UpdateMask
-	}
-	return nil
-}
-
-type UpdateTaskResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        *Task                  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateTaskResponse) Reset() {
-	*x = UpdateTaskResponse{}
-	mi := &file_todo_daemon_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTaskResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTaskResponse) ProtoMessage() {}
-
-func (x *UpdateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTaskResponse.ProtoReflect.Descriptor instead.
-func (*UpdateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *UpdateTaskResponse) GetResult() *Task {
-	if x != nil {
-		return x.Result
-	}
-	return nil
-}
-
-type DeleteTaskRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTaskRequest) Reset() {
-	*x = DeleteTaskRequest{}
-	mi := &file_todo_daemon_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTaskRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTaskRequest) ProtoMessage() {}
-
-func (x *DeleteTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTaskRequest.ProtoReflect.Descriptor instead.
-func (*DeleteTaskRequest) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *DeleteTaskRequest) GetId() string {
-	if x != nil {
-		return x.Id
+		return x.ApiBaseUrl
 	}
 	return ""
-}
-
-type DeleteTaskResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTaskResponse) Reset() {
-	*x = DeleteTaskResponse{}
-	mi := &file_todo_daemon_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTaskResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTaskResponse) ProtoMessage() {}
-
-func (x *DeleteTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_daemon_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTaskResponse.ProtoReflect.Descriptor instead.
-func (*DeleteTaskResponse) Descriptor() ([]byte, []int) {
-	return file_todo_daemon_proto_rawDescGZIP(), []int{13}
 }
 
 var File_todo_daemon_proto protoreflect.FileDescriptor
 
 const file_todo_daemon_proto_rawDesc = "" +
 	"\n" +
-	"\x11todo_daemon.proto\x12\x16mwopitz.todo_daemon.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x1b\n" +
-	"\aProcess\x12\x10\n" +
-	"\x03pid\x18\x01 \x01(\rR\x03pid\"\xe5\x01\n" +
-	"\x04Task\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\asummary\x18\x02 \x01(\tR\asummary\x129\n" +
+	"\x11todo_daemon.proto\x12\x0fmwopitz.todo.v1\"\x12\n" +
+	"\x10GetStatusRequest\"y\n" +
+	"\x06Status\x128\n" +
+	"\aprocess\x18\x01 \x01(\v2\x1e.mwopitz.todo.v1.ProcessStatusR\aprocess\x125\n" +
+	"\x06server\x18\x02 \x01(\v2\x1d.mwopitz.todo.v1.ServerStatusR\x06server\"!\n" +
+	"\rProcessStatus\x12\x10\n" +
+	"\x03pid\x18\x01 \x01(\rR\x03pid\"0\n" +
+	"\fServerStatus\x12 \n" +
+	"\fapi_base_url\x18\x01 \x01(\tR\n" +
+	"apiBaseUrl2W\n" +
 	"\n" +
-	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
-	"\fcompleted_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"#\n" +
-	"\aNewTask\x12\x18\n" +
-	"\asummary\x18\x01 \x01(\tR\asummary\"6\n" +
-	"\n" +
-	"TaskUpdate\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\asummary\x18\x02 \x01(\tR\asummary\"\x12\n" +
-	"\x10GetStatusRequest\"N\n" +
-	"\x11GetStatusResponse\x129\n" +
-	"\aprocess\x18\x01 \x01(\v2\x1f.mwopitz.todo_daemon.v1.ProcessR\aprocess\"\x11\n" +
-	"\x0fGetTasksRequest\"F\n" +
-	"\x10GetTasksResponse\x122\n" +
-	"\x05tasks\x18\x01 \x03(\v2\x1c.mwopitz.todo_daemon.v1.TaskR\x05tasks\"H\n" +
-	"\x11CreateTaskRequest\x123\n" +
-	"\x04task\x18\x01 \x01(\v2\x1f.mwopitz.todo_daemon.v1.NewTaskR\x04task\"F\n" +
-	"\x12CreateTaskResponse\x120\n" +
-	"\x04task\x18\x01 \x01(\v2\x1c.mwopitz.todo_daemon.v1.TaskR\x04task\"\x8c\x01\n" +
-	"\x11UpdateTaskRequest\x12:\n" +
-	"\x06update\x18\x01 \x01(\v2\".mwopitz.todo_daemon.v1.TaskUpdateR\x06update\x12;\n" +
-	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
-	"updateMask\"J\n" +
-	"\x12UpdateTaskResponse\x124\n" +
-	"\x06result\x18\x01 \x01(\v2\x1c.mwopitz.todo_daemon.v1.TaskR\x06result\"#\n" +
-	"\x11DeleteTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
-	"\x12DeleteTaskResponse2\x86\x04\n" +
-	"\n" +
-	"TodoDaemon\x12b\n" +
-	"\tGetStatus\x12(.mwopitz.todo_daemon.v1.GetStatusRequest\x1a).mwopitz.todo_daemon.v1.GetStatusResponse\"\x00\x12_\n" +
-	"\bGetTasks\x12'.mwopitz.todo_daemon.v1.GetTasksRequest\x1a(.mwopitz.todo_daemon.v1.GetTasksResponse\"\x00\x12e\n" +
-	"\n" +
-	"CreateTask\x12).mwopitz.todo_daemon.v1.CreateTaskRequest\x1a*.mwopitz.todo_daemon.v1.CreateTaskResponse\"\x00\x12e\n" +
-	"\n" +
-	"UpdateTask\x12).mwopitz.todo_daemon.v1.UpdateTaskRequest\x1a*.mwopitz.todo_daemon.v1.UpdateTaskResponse\"\x00\x12e\n" +
-	"\n" +
-	"DeleteTask\x12).mwopitz.todo_daemon.v1.DeleteTaskRequest\x1a*.mwopitz.todo_daemon.v1.DeleteTaskResponse\"\x00B0Z.github.com/mwopitz/go-daemon/internal/protogenb\x06proto3"
+	"TodoDaemon\x12I\n" +
+	"\tGetStatus\x12!.mwopitz.todo.v1.GetStatusRequest\x1a\x17.mwopitz.todo.v1.Status\"\x00B2Z0github.com/mwopitz/todo-daemon/internal/protogenb\x06proto3"
 
 var (
 	file_todo_daemon_proto_rawDescOnce sync.Once
@@ -726,51 +231,23 @@ func file_todo_daemon_proto_rawDescGZIP() []byte {
 	return file_todo_daemon_proto_rawDescData
 }
 
-var file_todo_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_todo_daemon_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_todo_daemon_proto_goTypes = []any{
-	(*Process)(nil),               // 0: mwopitz.todo_daemon.v1.Process
-	(*Task)(nil),                  // 1: mwopitz.todo_daemon.v1.Task
-	(*NewTask)(nil),               // 2: mwopitz.todo_daemon.v1.NewTask
-	(*TaskUpdate)(nil),            // 3: mwopitz.todo_daemon.v1.TaskUpdate
-	(*GetStatusRequest)(nil),      // 4: mwopitz.todo_daemon.v1.GetStatusRequest
-	(*GetStatusResponse)(nil),     // 5: mwopitz.todo_daemon.v1.GetStatusResponse
-	(*GetTasksRequest)(nil),       // 6: mwopitz.todo_daemon.v1.GetTasksRequest
-	(*GetTasksResponse)(nil),      // 7: mwopitz.todo_daemon.v1.GetTasksResponse
-	(*CreateTaskRequest)(nil),     // 8: mwopitz.todo_daemon.v1.CreateTaskRequest
-	(*CreateTaskResponse)(nil),    // 9: mwopitz.todo_daemon.v1.CreateTaskResponse
-	(*UpdateTaskRequest)(nil),     // 10: mwopitz.todo_daemon.v1.UpdateTaskRequest
-	(*UpdateTaskResponse)(nil),    // 11: mwopitz.todo_daemon.v1.UpdateTaskResponse
-	(*DeleteTaskRequest)(nil),     // 12: mwopitz.todo_daemon.v1.DeleteTaskRequest
-	(*DeleteTaskResponse)(nil),    // 13: mwopitz.todo_daemon.v1.DeleteTaskResponse
-	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil), // 15: google.protobuf.FieldMask
+	(*GetStatusRequest)(nil), // 0: mwopitz.todo.v1.GetStatusRequest
+	(*Status)(nil),           // 1: mwopitz.todo.v1.Status
+	(*ProcessStatus)(nil),    // 2: mwopitz.todo.v1.ProcessStatus
+	(*ServerStatus)(nil),     // 3: mwopitz.todo.v1.ServerStatus
 }
 var file_todo_daemon_proto_depIdxs = []int32{
-	14, // 0: mwopitz.todo_daemon.v1.Task.created_at:type_name -> google.protobuf.Timestamp
-	14, // 1: mwopitz.todo_daemon.v1.Task.updated_at:type_name -> google.protobuf.Timestamp
-	14, // 2: mwopitz.todo_daemon.v1.Task.completed_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: mwopitz.todo_daemon.v1.GetStatusResponse.process:type_name -> mwopitz.todo_daemon.v1.Process
-	1,  // 4: mwopitz.todo_daemon.v1.GetTasksResponse.tasks:type_name -> mwopitz.todo_daemon.v1.Task
-	2,  // 5: mwopitz.todo_daemon.v1.CreateTaskRequest.task:type_name -> mwopitz.todo_daemon.v1.NewTask
-	1,  // 6: mwopitz.todo_daemon.v1.CreateTaskResponse.task:type_name -> mwopitz.todo_daemon.v1.Task
-	3,  // 7: mwopitz.todo_daemon.v1.UpdateTaskRequest.update:type_name -> mwopitz.todo_daemon.v1.TaskUpdate
-	15, // 8: mwopitz.todo_daemon.v1.UpdateTaskRequest.update_mask:type_name -> google.protobuf.FieldMask
-	1,  // 9: mwopitz.todo_daemon.v1.UpdateTaskResponse.result:type_name -> mwopitz.todo_daemon.v1.Task
-	4,  // 10: mwopitz.todo_daemon.v1.TodoDaemon.GetStatus:input_type -> mwopitz.todo_daemon.v1.GetStatusRequest
-	6,  // 11: mwopitz.todo_daemon.v1.TodoDaemon.GetTasks:input_type -> mwopitz.todo_daemon.v1.GetTasksRequest
-	8,  // 12: mwopitz.todo_daemon.v1.TodoDaemon.CreateTask:input_type -> mwopitz.todo_daemon.v1.CreateTaskRequest
-	10, // 13: mwopitz.todo_daemon.v1.TodoDaemon.UpdateTask:input_type -> mwopitz.todo_daemon.v1.UpdateTaskRequest
-	12, // 14: mwopitz.todo_daemon.v1.TodoDaemon.DeleteTask:input_type -> mwopitz.todo_daemon.v1.DeleteTaskRequest
-	5,  // 15: mwopitz.todo_daemon.v1.TodoDaemon.GetStatus:output_type -> mwopitz.todo_daemon.v1.GetStatusResponse
-	7,  // 16: mwopitz.todo_daemon.v1.TodoDaemon.GetTasks:output_type -> mwopitz.todo_daemon.v1.GetTasksResponse
-	9,  // 17: mwopitz.todo_daemon.v1.TodoDaemon.CreateTask:output_type -> mwopitz.todo_daemon.v1.CreateTaskResponse
-	11, // 18: mwopitz.todo_daemon.v1.TodoDaemon.UpdateTask:output_type -> mwopitz.todo_daemon.v1.UpdateTaskResponse
-	13, // 19: mwopitz.todo_daemon.v1.TodoDaemon.DeleteTask:output_type -> mwopitz.todo_daemon.v1.DeleteTaskResponse
-	15, // [15:20] is the sub-list for method output_type
-	10, // [10:15] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	2, // 0: mwopitz.todo.v1.Status.process:type_name -> mwopitz.todo.v1.ProcessStatus
+	3, // 1: mwopitz.todo.v1.Status.server:type_name -> mwopitz.todo.v1.ServerStatus
+	0, // 2: mwopitz.todo.v1.TodoDaemon.GetStatus:input_type -> mwopitz.todo.v1.GetStatusRequest
+	1, // 3: mwopitz.todo.v1.TodoDaemon.GetStatus:output_type -> mwopitz.todo.v1.Status
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_todo_daemon_proto_init() }
@@ -784,7 +261,7 @@ func file_todo_daemon_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_todo_daemon_proto_rawDesc), len(file_todo_daemon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
