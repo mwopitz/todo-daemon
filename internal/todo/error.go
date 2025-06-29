@@ -53,3 +53,7 @@ func newBadRequestError(msg string, cause error) *restError {
 func newInternalServerError(msg string, cause error) *restError {
 	return &restError{cause, http.StatusInternalServerError, msg}
 }
+
+func newNotFoundError(msg string, cause error) *restError {
+	return &restError{cause, http.StatusNotFound, msg}
+}

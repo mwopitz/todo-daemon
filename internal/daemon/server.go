@@ -29,12 +29,25 @@ type Server struct {
 // logger is provided, it the server uses [log.Default].
 func NewServer(logger *log.Logger) *Server {
 	db := todo.NewInMemoryTaskDB()
+	// Add some demo data...
+	tasks := []todo.TaskCreate{
+		{Summary: "Get some milk 🥛"},
+		{Summary: "Walk the dog 🐕"},
+		{Summary: "Go to bed early 😴 → 🛏️"},
+	}
+	ctx := context.Background()
+	for _, task := range tasks {
+		if _, err := db.Create(ctx, &task); err != nil {
+			panic(err)
+		}
+	}
 	ctrl := todo.NewController(db, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/tasks", ctrl.GetTasks)
 	mux.HandleFunc("POST /api/v1/tasks", ctrl.CreateTask)
 	mux.HandleFunc("PATCH /api/v1/tasks/{id}", ctrl.UpdateTask)
+	mux.HandleFunc("DELETE /api/v1/tasks/{id}", ctrl.DeleteTask)
 
 	s := &Server{
 		logger:     cmp.Or(logger, log.Default()),

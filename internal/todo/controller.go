@@ -22,7 +22,11 @@ func NewController(tasks TaskRepository, logger *log.Logger) *Controller {
 }
 
 func (c *Controller) respond(w http.ResponseWriter, status int, data any) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
+	if data == nil {
+		return
+	}
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		c.logger.Printf("cannot write response: %v", err)
 	}
@@ -30,9 +34,7 @@ func (c *Controller) respond(w http.ResponseWriter, status int, data any) {
 
 // CreateTask handles requests to create a new task.
 func (c *Controller) CreateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling request %s %s", r.Method, r.URL.Path)
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
 
 	task, err := c.doCreateTask(r)
 	if err != nil {
@@ -41,8 +43,7 @@ func (c *Controller) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.logger.Printf("created task %s", task.ID)
-
+	c.logger.Printf("created task %s: %s", task.ID, task.Summary)
 	c.respond(w, http.StatusCreated, task)
 }
 
@@ -61,18 +62,16 @@ func (c *Controller) doCreateTask(r *http.Request) (*taskDTO, *restError) {
 
 // GetTasks handles the request to retrieve tasks.
 func (c *Controller) GetTasks(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling request %s %s", r.Method, r.URL.Path)
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
 
 	tasks, err := c.doGetTasks(r)
 	if err != nil {
 		c.logger.Println(err)
 		c.respond(w, err.status, err)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
+	c.logger.Printf("retrieved %d tasks", len(tasks))
 	c.respond(w, http.StatusOK, tasks)
 }
 
@@ -86,24 +85,17 @@ func (c *Controller) doGetTasks(r *http.Request) ([]taskDTO, *restError) {
 
 // UpdateTask handles requests to update an existing task.
 func (c *Controller) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling request %s %s", r.Method, r.URL.Path)
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
 
 	task, err := c.doUpdateTask(r)
 	if err != nil {
 		c.logger.Println(err)
-		w.WriteHeader(err.status)
-		if e := json.NewEncoder(w).Encode(err); e != nil {
-			c.logger.Printf("cannot write response: %v", e)
-		}
+		c.respond(w, err.status, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	if e := json.NewEncoder(w).Encode(task); e != nil {
-		c.logger.Printf("cannot write response: %v", e)
-	}
+	c.logger.Printf("updated task %s: %s", task.ID, task.Summary)
+	c.respond(w, http.StatusOK, task)
 }
 
 func (c *Controller) doUpdateTask(r *http.Request) (*taskDTO, *restError) {
@@ -118,4 +110,29 @@ func (c *Controller) doUpdateTask(r *http.Request) (*taskDTO, *restError) {
 		return nil, newInternalServerError("cannot update task", err)
 	}
 	return task.toDTO(), nil
+}
+
+// DeleteTask handles requests to delete an existing task.
+func (c *Controller) DeleteTask(w http.ResponseWriter, r *http.Request) {
+	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
+
+	
+	if err := c.doDeleteTask(r); err != nil {
+		c.logger.Println(err)
+		c.respond(w, err.status, err)
+		return
+	}
+
+	c.respond(w, http.StatusNoContent, nil)
+}
+
+func (c *Controller) doDeleteTask(r *http.Request) *restError {
+	err := c.tasks.Delete(r.Context(), r.PathValue("id"))
+	if err != nil {
+		if IsTaskNotFoundError(err) {
+			return newNotFoundError("no such task", err)
+		}
+		return newInternalServerError("cannot delete task", err)
+	}
+	return nil
 }
