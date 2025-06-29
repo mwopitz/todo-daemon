@@ -116,7 +116,6 @@ func (c *Controller) doUpdateTask(r *http.Request) (*taskDTO, *restError) {
 func (c *Controller) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
 
-	
 	if err := c.doDeleteTask(r); err != nil {
 		c.logger.Println(err)
 		c.respond(w, err.status, err)
