@@ -14,9 +14,9 @@ type TaskRepository interface {
 	// All retrieves all tasks from the repository.
 	All(ctx context.Context) (Tasks, error)
 	// Create adds a new task to the repository.
-	Create(ctx context.Context, task TaskCreate) (*Task, error)
+	Create(ctx context.Context, task *TaskCreate) (*Task, error)
 	// Update modifies an existing task in the repository.
-	Update(ctx context.Context, task TaskUpdate) (*Task, error)
+	Update(ctx context.Context, task *TaskUpdate) (*Task, error)
 	// Delete removes an existing task from the repository.
 	Delete(ctx context.Context, id string) error
 }
@@ -44,7 +44,7 @@ func (db *InMemoryTaskDB) All(_ context.Context) (Tasks, error) {
 }
 
 // Create adds a new task to the task map.
-func (db *InMemoryTaskDB) Create(_ context.Context, task TaskCreate) (*Task, error) {
+func (db *InMemoryTaskDB) Create(_ context.Context, task *TaskCreate) (*Task, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	t := Task{
@@ -57,7 +57,7 @@ func (db *InMemoryTaskDB) Create(_ context.Context, task TaskCreate) (*Task, err
 }
 
 // Update modifies an existing task in the task map
-func (db *InMemoryTaskDB) Update(_ context.Context, task TaskUpdate) (*Task, error) {
+func (db *InMemoryTaskDB) Update(_ context.Context, task *TaskUpdate) (*Task, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	t, ok := db.tasks[task.ID]

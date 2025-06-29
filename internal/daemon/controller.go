@@ -4,7 +4,9 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"math"
 
 	pb "github.com/mwopitz/todo-daemon/internal/protogen"
 )
@@ -49,9 +51,13 @@ func (c *controller) GetStatus(
 	if err != nil {
 		return nil, err
 	}
+	if status.pid < 0 || status.pid > math.MaxUint32 {
+		return nil, fmt.Errorf("unexpected PID %d", status.pid)
+	}
+	pid := uint32(status.pid)
 	return &pb.Status{
 		Process: &pb.ProcessStatus{
-			Pid: uint32(status.pid),
+			Pid: pid,
 		},
 		Server: &pb.ServerStatus{
 			ApiBaseUrl: status.apiBaseURL,

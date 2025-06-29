@@ -27,8 +27,8 @@ func (t *Task) toDTO() *taskDTO {
 
 func (ts Tasks) toDTOs() []taskDTO {
 	dtos := make([]taskDTO, len(ts))
-	for i, t := range ts {
-		dtos[i].assign(t)
+	for i := range ts {
+		dtos[i].assign(&ts[i])
 	}
 	return dtos
 }
@@ -41,7 +41,7 @@ type taskDTO struct {
 	CompletedAt time.Time `json:"completed_at,omitzero"`
 }
 
-func (dto *taskDTO) assign(t Task) {
+func (dto *taskDTO) assign(t *Task) {
 	dto.ID = t.ID
 	dto.Summary = t.Summary
 	dto.CreatedAt = t.CreatedAt
@@ -59,8 +59,10 @@ type taskCreateDTO struct {
 	Summary string `json:"summary"`
 }
 
-func newTaskCreateFromDTO(dto taskCreateDTO) TaskCreate {
-	return TaskCreate(dto)
+func newTaskCreateFromDTO(dto *taskCreateDTO) *TaskCreate {
+	return &TaskCreate{
+		Summary: dto.Summary,
+	}
 }
 
 // TaskUpdate represents an modification to a task, which can include changing
@@ -77,6 +79,10 @@ type taskUpdateDTO struct {
 	CompletedAt time.Time `json:"completed_at,omitzero"`
 }
 
-func newTaskUpdateFromDTO(dto taskUpdateDTO) TaskUpdate {
-	return TaskUpdate(dto)
+func newTaskUpdateFromDTO(dto taskUpdateDTO) *TaskUpdate {
+	return &TaskUpdate{
+		ID:          dto.ID,
+		Summary:     dto.Summary,
+		CompletedAt: dto.CompletedAt,
+	}
 }
