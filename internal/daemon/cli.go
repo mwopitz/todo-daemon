@@ -8,8 +8,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gofrs/flock"
+	"github.com/mwopitz/todo-daemon/api/todopb"
 	"github.com/urfave/cli/v3"
 )
 
@@ -29,8 +31,8 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 	c := &CLI{}
 	c.logger = cmp.Or(logger, log.Default())
 	c.rootCmd = &cli.Command{
-		Name:    "go-daemon",
-		Usage:   "A simple daemon server in Go",
+		Name:    "todo-daemon",
+		Usage:   "A daemon for managing a to-do list",
 		Version: version,
 		Commands: []*cli.Command{
 			{
@@ -52,11 +54,33 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 				Action: c.printServerStatus,
 			},
 			{
+				Name:  "tasks",
+				Usage: "Manage tasks in the to-do list",
+				Commands: []*cli.Command{
+					{
+						Name:   "list",
+						Usage:  "Print all available tasks",
+						Action: c.listTasks,
+					},
+					{
+						Name:  "complete",
+						Usage: "Completes the specified task",
+						Arguments: []cli.Argument{
+							&cli.StringArg{
+								Name: "id",
+							},
+						},
+						Action: c.completeTask,
+					},
+				},
+			},
+			{
 				Name:   "version",
 				Usage:  "Print the version of the To-do Daemon",
 				Action: c.printVersion,
 			},
 		},
+		CommandNotFound: c.commandNotFound,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:      "sock",
@@ -128,6 +152,10 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	}
 }
 
+func (c *CLI) commandNotFound(_ context.Context, _ *cli.Command, name string) {
+	c.logger.Printf("invalid command: '%s'", name)
+}
+
 func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
 	client, err := NewClient("unix", sockFile, c.logger)
@@ -136,19 +164,83 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	}
 	defer func() {
 		if e := client.Close(); e != nil {
-			c.logger.Printf("cannot close client: %v", e)
+			c.logger.Printf("cannot gRPC close client: %v", e)
 		}
 	}()
 
 	status, err := client.ServerStatus(ctx)
 	if err != nil {
-		return fmt.Errorf("cannot get status: %w", err)
+		return fmt.Errorf("cannot retieve server status: %w", err)
 	}
-	if pid := status.GetProcess().GetPid(); pid > 0 {
+	if pid := status.GetPid(); pid > 0 {
 		fmt.Printf("pid=%d\n", pid)
 	}
-	if apiBaseURL := status.GetServer().GetApiBaseUrl(); apiBaseURL != "" {
+	if apiBaseURL := status.GetApiBaseUrl(); apiBaseURL != "" {
 		fmt.Printf("api_base_url=%s\n", apiBaseURL)
+	}
+	return nil
+}
+
+func (c *CLI) listTasks(ctx context.Context, cmd *cli.Command) error {
+	sockFile := cmd.String("sock")
+	client, err := NewClient("unix", sockFile, c.logger)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := client.Close(); e != nil {
+			c.logger.Printf("cannot gRPC close client: %v", e)
+		}
+	}()
+
+	tasks, err := client.ListTasks(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot retrieve tasks: %w", err)
+	}
+
+	return c.printTasks(tasks)
+}
+
+func (c *CLI) completeTask(ctx context.Context, cmd *cli.Command) error {
+	id := cmd.StringArg("id")
+	if id == "" {
+		return errors.New("no task ID provided")
+	}
+
+	sockFile := cmd.String("sock")
+	client, err := NewClient("unix", sockFile, c.logger)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := client.Close(); e != nil {
+			c.logger.Printf("cannot gRPC close client: %v", e)
+		}
+	}()
+
+	_, err = client.CompleteTask(ctx, id)
+	if err != nil {
+		return fmt.Errorf("cannot complete task '%s': %w", id, err)
+	}
+
+	tasks, err := client.ListTasks(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot retrieve tasks: %w", err)
+	}
+
+	return c.printTasks(tasks)
+}
+
+func (c *CLI) printTasks(tasks []*todopb.Task) error {
+	for _, t := range tasks {
+		status := ' '
+		completedAt := t.GetCompletedAt().AsTime()
+		if !completedAt.IsZero() && completedAt.Before(time.Now()) {
+			status = '✓'
+		}
+		if _, err := fmt.Printf("#%s [%c] %s\n", t.GetId(), status, t.GetSummary()); err != nil {
+			return err
+		}
 	}
 	return nil
 }

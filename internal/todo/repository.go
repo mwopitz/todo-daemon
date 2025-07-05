@@ -2,6 +2,7 @@ package todo
 
 import (
 	"context"
+	"errors"
 	"maps"
 	"slices"
 	"strconv"
@@ -15,9 +16,11 @@ type TaskRepository interface {
 	All(ctx context.Context) (Tasks, error)
 	// Create adds a new task to the repository.
 	Create(ctx context.Context, task *TaskCreate) (*Task, error)
-	// Update modifies an existing task in the repository.
-	Update(ctx context.Context, task *TaskUpdate) (*Task, error)
-	// Delete removes an existing task from the repository.
+	// Update modifies an existing task in the repository. If the task does not
+	// exist, it returns a [TaskNotFoundError].
+	Update(ctx context.Context, id string, update *TaskUpdate, fields FieldMask) (*Task, error)
+	// Delete removes an existing task from the repository. If the task does not
+	// exist, it returns a [TaskNotFoundError].
 	Delete(ctx context.Context, id string) error
 }
 
@@ -40,11 +43,19 @@ func NewInMemoryTaskDB() *InMemoryTaskDB {
 func (db *InMemoryTaskDB) All(_ context.Context) (Tasks, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	return slices.Collect(maps.Values(db.tasks)), nil
+	tasks := slices.Collect(maps.Values(db.tasks))
+	// Sort by creation time in ascending order.
+	slices.SortFunc(tasks, func(a, b Task) int {
+		return a.CreatedAt.Compare(b.CreatedAt)
+	})
+	return tasks, nil
 }
 
 // Create adds a new task to the task map.
 func (db *InMemoryTaskDB) Create(_ context.Context, task *TaskCreate) (*Task, error) {
+	if task == nil {
+		return nil, errors.New("task cannot be nil")
+	}
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	t := Task{
@@ -57,14 +68,25 @@ func (db *InMemoryTaskDB) Create(_ context.Context, task *TaskCreate) (*Task, er
 }
 
 // Update modifies an existing task in the task map
-func (db *InMemoryTaskDB) Update(_ context.Context, task *TaskUpdate) (*Task, error) {
+func (db *InMemoryTaskDB) Update(_ context.Context, id string, update *TaskUpdate, fields FieldMask) (*Task, error) {
+	if update == nil {
+		return nil, errors.New("update cannot be nil")
+	}
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	t, ok := db.tasks[task.ID]
+	t, ok := db.tasks[id]
 	if !ok {
-		return nil, NewTaskNotFoundError(task.ID)
+		return nil, NewTaskNotFoundError(id)
 	}
-	t.Summary = task.Summary
+	now := time.Now()
+	if slices.Contains(fields, "summary") {
+		t.Summary = update.Summary
+		t.UpdatedAt = now
+	}
+	if slices.Contains(fields, "completed_at") {
+		t.CompletedAt = update.CompletedAt
+		t.UpdatedAt = now
+	}
 	db.tasks[t.ID] = t
 	return &t, nil
 }

@@ -8,8 +8,10 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/mwopitz/todo-daemon/internal/protogen"
+	pb "github.com/mwopitz/todo-daemon/api/todopb"
 )
 
 // Client is used for communicating with the To-do Daemon server.
@@ -46,6 +48,34 @@ func (c *Client) Close() error {
 }
 
 // ServerStatus retrieves the address of the To-do Daemon server.
-func (c *Client) ServerStatus(ctx context.Context) (*pb.Status, error) {
-	return c.daemon.GetStatus(ctx, &pb.GetStatusRequest{})
+func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusResponse, error) {
+	return c.daemon.Status(ctx, &pb.StatusRequest{})
+}
+
+// ListTasks retrieves the list of tasks from the To-do Daemon server.
+func (c *Client) ListTasks(ctx context.Context) ([]*pb.Task, error) {
+	resp, err := c.daemon.ListTasks(ctx, &pb.ListTasksRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetTasks(), nil
+}
+
+// CompleteTask marks the specified task as completed.
+func (c *Client) CompleteTask(ctx context.Context, id string) (*pb.Task, error) {
+	update := &pb.TaskUpdate{CompletedAt: timestamppb.Now()}
+	fields, err := fieldmaskpb.New(update, "completed_at")
+	if err != nil {
+		return nil, err
+	}
+	req := &pb.UpdateTaskRequest{
+		Id:     id,
+		Update: update,
+		Fields: fields,
+	}
+	res, err := c.daemon.UpdateTask(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.GetTask(), nil
 }

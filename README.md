@@ -65,13 +65,13 @@ with the server process.
 1.  Install the Go plugins for the protobuf compiler:
     
     ```sh
-    go tool install
+    go install tool
     ```
 1.  Execute the compiler:
     
     ```sh
-    protoc --proto_path=./api/proto \
+    protoc --proto_path=./api/todopb \
       --go_out module=github.com/mwopitz/todo-daemon:. \
       --go-grpc_out module=github.com/mwopitz/todo-daemon:. \
-      ./api/proto/todo_daemon.proto
+      ./api/todopb/daemon.proto
     ```

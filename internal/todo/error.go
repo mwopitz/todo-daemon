@@ -26,7 +26,7 @@ func IsTaskNotFoundError(err error) bool {
 }
 
 func (e *TaskNotFoundError) Error() string {
-	return fmt.Sprintf("no such task: %s", e.ID)
+	return fmt.Sprintf("no such task: '%s'", e.ID)
 }
 
 type restError struct {
@@ -37,9 +37,9 @@ type restError struct {
 
 func (e *restError) Error() string {
 	if e.cause == nil {
-		return fmt.Sprintf("%s: %s", e.Message, e.cause.Error())
+		return e.Message
 	}
-	return e.Message
+	return fmt.Sprintf("%s: %s", e.Message, e.cause.Error())
 }
 
 func (e *restError) Cause() error {

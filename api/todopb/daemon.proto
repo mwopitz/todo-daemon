@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package mwopitz.todo.v1;
+
+option go_package = "github.com/mwopitz/todo-daemon/api/todopb";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// The gRPC interface of the To-do Daemon.
+service TodoDaemon {
+  // Queries the status of the To-do Daemon.
+  rpc Status (StatusRequest) returns (StatusResponse) {}
+  // Adds a new task to the to-do list.
+  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+  // List all tasks available in the to-do list.
+  rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {}
+  // Updates a task in the to-do list.
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {}
+  // Removes a task from the to-do list
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse) {}
+}
+
+message StatusRequest {}
+
+message StatusResponse {
+  // The identifier of the To-do Daemon's server process.
+  int32 pid = 1;
+  // The URL of the To-do Daemon's REST API.
+  string api_base_url = 2;
+}
+
+// A single task to complete in a to-do list.
+message Task {
+  string id = 1;
+  string summary = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+  google.protobuf.Timestamp completed_at = 5;
+}
+
+// A new task to be added to the to-do list.
+message NewTask {
+  // The initial summary of the task.
+  string summary = 1;
+}
+
+// The changes to apply to an existing task in the to-do list.
+message TaskUpdate {
+  // The new summary to assign to the task.
+  string summary = 2;
+  // The completion timestamp to assign to the task.
+  google.protobuf.Timestamp completed_at = 3;
+}
+
+message CreateTaskRequest {
+  // The task to create.
+  NewTask task = 1;
+}
+
+message CreateTaskResponse {
+  // The tasks that was created.
+  Task task = 1;
+}
+
+message ListTasksRequest {}
+
+message ListTasksResponse {
+  // The tasks available in the to-do list.
+  repeated Task tasks = 1;
+}
+
+message UpdateTaskRequest {
+  // The ID of the task to update.
+  string id = 1;
+  // The changes to apply to the task's fields.
+  TaskUpdate update = 2;
+  // The fields of the task to be updated.
+  google.protobuf.FieldMask fields = 3;
+};
+
+message UpdateTaskResponse {
+  // The task after applying the update.
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  // The ID of the task to delete.
+  string id = 1;
+}
+
+message DeleteTaskResponse {
+  // The tasks available in the to-do list excluding the deleted task.
+  repeated Task tasks = 1;
+}
