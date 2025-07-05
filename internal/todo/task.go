@@ -89,6 +89,12 @@ func newTaskCreateFromDTO(dto *taskCreateDTO) *TaskCreate {
 	}
 }
 
+func newTaskCreateFromProto(proto *pb.NewTask) *TaskCreate {
+	return &TaskCreate{
+		Summary: proto.GetSummary(),
+	}
+}
+
 // TaskUpdate represents an modification to a task, which can include changing
 // the summary or marking the task as completed.
 type TaskUpdate struct {

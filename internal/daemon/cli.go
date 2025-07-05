@@ -58,6 +58,16 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 				Usage: "Manage tasks in the to-do list",
 				Commands: []*cli.Command{
 					{
+						Name:  "add",
+						Usage: "Add a new task to the to-do list",
+						Arguments: []cli.Argument{
+							&cli.StringArg{
+								Name: "summary",
+							},
+						},
+						Action: c.createTask,
+					},
+					{
 						Name:   "list",
 						Usage:  "Print all available tasks",
 						Action: c.listTasks,
@@ -71,6 +81,16 @@ func NewCLI(version string, logger *log.Logger) *CLI {
 							},
 						},
 						Action: c.completeTask,
+					},
+					{
+						Name:  "delete",
+						Usage: "Deletes the specified task",
+						Arguments: []cli.Argument{
+							&cli.StringArg{
+								Name: "id",
+							},
+						},
+						Action: c.deleteTask,
 					},
 				},
 			},
@@ -181,6 +201,36 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
+func (c *CLI) createTask(ctx context.Context, cmd *cli.Command) error {
+	summary := cmd.StringArg("summary")
+	if summary == "" {
+		return errors.New("no task summary provided")
+	}
+
+	sockFile := cmd.String("sock")
+	client, err := NewClient("unix", sockFile, c.logger)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := client.Close(); e != nil {
+			c.logger.Printf("cannot close gRPC client: %v", e)
+		}
+	}()
+
+	_, err = client.CreateTask(ctx, summary)
+	if err != nil {
+		return fmt.Errorf("cannot create task: %w", err)
+	}
+
+	tasks, err := client.ListTasks(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot retrieve tasks: %w", err)
+	}
+
+	return c.printTasks(tasks)
+}
+
 func (c *CLI) listTasks(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
 	client, err := NewClient("unix", sockFile, c.logger)
@@ -189,7 +239,7 @@ func (c *CLI) listTasks(ctx context.Context, cmd *cli.Command) error {
 	}
 	defer func() {
 		if e := client.Close(); e != nil {
-			c.logger.Printf("cannot gRPC close client: %v", e)
+			c.logger.Printf("cannot close gRPC client: %v", e)
 		}
 	}()
 
@@ -214,13 +264,42 @@ func (c *CLI) completeTask(ctx context.Context, cmd *cli.Command) error {
 	}
 	defer func() {
 		if e := client.Close(); e != nil {
-			c.logger.Printf("cannot gRPC close client: %v", e)
+			c.logger.Printf("cannot close gRPC client: %v", e)
 		}
 	}()
 
 	_, err = client.CompleteTask(ctx, id)
 	if err != nil {
 		return fmt.Errorf("cannot complete task '%s': %w", id, err)
+	}
+
+	tasks, err := client.ListTasks(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot retrieve tasks: %w", err)
+	}
+
+	return c.printTasks(tasks)
+}
+
+func (c *CLI) deleteTask(ctx context.Context, cmd *cli.Command) error {
+	id := cmd.StringArg("id")
+	if id == "" {
+		return errors.New("no task ID provided")
+	}
+
+	sockFile := cmd.String("sock")
+	client, err := NewClient("unix", sockFile, c.logger)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if e := client.Close(); e != nil {
+			c.logger.Printf("cannot close gRPC client: %v", e)
+		}
+	}()
+
+	if err := client.DeleteTask(ctx, id); err != nil {
+		return fmt.Errorf("cannot delete task: %w", err)
 	}
 
 	tasks, err := client.ListTasks(ctx)

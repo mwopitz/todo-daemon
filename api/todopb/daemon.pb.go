@@ -240,9 +240,9 @@ func (x *NewTask) GetSummary() string {
 type TaskUpdate struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The new summary to assign to the task.
-	Summary string `protobuf:"bytes,2,opt,name=summary,proto3" json:"summary,omitempty"`
+	Summary string `protobuf:"bytes,1,opt,name=summary,proto3" json:"summary,omitempty"`
 	// The completion timestamp to assign to the task.
-	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -338,7 +338,7 @@ func (x *CreateTaskRequest) GetTask() *NewTask {
 
 type CreateTaskResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The tasks that was created.
+	// The task that was created.
 	Task          *Task `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -616,9 +616,7 @@ func (x *DeleteTaskRequest) GetId() string {
 }
 
 type DeleteTaskResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// The tasks available in the to-do list excluding the deleted task.
-	Tasks         []*Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -653,13 +651,6 @@ func (*DeleteTaskResponse) Descriptor() ([]byte, []int) {
 	return file_daemon_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *DeleteTaskResponse) GetTasks() []*Task {
-	if x != nil {
-		return x.Tasks
-	}
-	return nil
-}
-
 var File_daemon_proto protoreflect.FileDescriptor
 
 const file_daemon_proto_rawDesc = "" +
@@ -682,8 +673,8 @@ const file_daemon_proto_rawDesc = "" +
 	"\asummary\x18\x01 \x01(\tR\asummary\"e\n" +
 	"\n" +
 	"TaskUpdate\x12\x18\n" +
-	"\asummary\x18\x02 \x01(\tR\asummary\x12=\n" +
-	"\fcompleted_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"A\n" +
+	"\asummary\x18\x01 \x01(\tR\asummary\x12=\n" +
+	"\fcompleted_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"A\n" +
 	"\x11CreateTaskRequest\x12,\n" +
 	"\x04task\x18\x01 \x01(\v2\x18.mwopitz.todo.v1.NewTaskR\x04task\"?\n" +
 	"\x12CreateTaskResponse\x12)\n" +
@@ -698,9 +689,8 @@ const file_daemon_proto_rawDesc = "" +
 	"\x12UpdateTaskResponse\x12)\n" +
 	"\x04task\x18\x01 \x01(\v2\x15.mwopitz.todo.v1.TaskR\x04task\"#\n" +
 	"\x11DeleteTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"A\n" +
-	"\x12DeleteTaskResponse\x12+\n" +
-	"\x05tasks\x18\x01 \x03(\v2\x15.mwopitz.todo.v1.TaskR\x05tasks2\xba\x03\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
+	"\x12DeleteTaskResponse2\xba\x03\n" +
 	"\n" +
 	"TodoDaemon\x12K\n" +
 	"\x06Status\x12\x1e.mwopitz.todo.v1.StatusRequest\x1a\x1f.mwopitz.todo.v1.StatusResponse\"\x00\x12W\n" +
@@ -753,22 +743,21 @@ var file_daemon_proto_depIdxs = []int32{
 	4,  // 7: mwopitz.todo.v1.UpdateTaskRequest.update:type_name -> mwopitz.todo.v1.TaskUpdate
 	14, // 8: mwopitz.todo.v1.UpdateTaskRequest.fields:type_name -> google.protobuf.FieldMask
 	2,  // 9: mwopitz.todo.v1.UpdateTaskResponse.task:type_name -> mwopitz.todo.v1.Task
-	2,  // 10: mwopitz.todo.v1.DeleteTaskResponse.tasks:type_name -> mwopitz.todo.v1.Task
-	0,  // 11: mwopitz.todo.v1.TodoDaemon.Status:input_type -> mwopitz.todo.v1.StatusRequest
-	5,  // 12: mwopitz.todo.v1.TodoDaemon.CreateTask:input_type -> mwopitz.todo.v1.CreateTaskRequest
-	7,  // 13: mwopitz.todo.v1.TodoDaemon.ListTasks:input_type -> mwopitz.todo.v1.ListTasksRequest
-	9,  // 14: mwopitz.todo.v1.TodoDaemon.UpdateTask:input_type -> mwopitz.todo.v1.UpdateTaskRequest
-	11, // 15: mwopitz.todo.v1.TodoDaemon.DeleteTask:input_type -> mwopitz.todo.v1.DeleteTaskRequest
-	1,  // 16: mwopitz.todo.v1.TodoDaemon.Status:output_type -> mwopitz.todo.v1.StatusResponse
-	6,  // 17: mwopitz.todo.v1.TodoDaemon.CreateTask:output_type -> mwopitz.todo.v1.CreateTaskResponse
-	8,  // 18: mwopitz.todo.v1.TodoDaemon.ListTasks:output_type -> mwopitz.todo.v1.ListTasksResponse
-	10, // 19: mwopitz.todo.v1.TodoDaemon.UpdateTask:output_type -> mwopitz.todo.v1.UpdateTaskResponse
-	12, // 20: mwopitz.todo.v1.TodoDaemon.DeleteTask:output_type -> mwopitz.todo.v1.DeleteTaskResponse
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	0,  // 10: mwopitz.todo.v1.TodoDaemon.Status:input_type -> mwopitz.todo.v1.StatusRequest
+	5,  // 11: mwopitz.todo.v1.TodoDaemon.CreateTask:input_type -> mwopitz.todo.v1.CreateTaskRequest
+	7,  // 12: mwopitz.todo.v1.TodoDaemon.ListTasks:input_type -> mwopitz.todo.v1.ListTasksRequest
+	9,  // 13: mwopitz.todo.v1.TodoDaemon.UpdateTask:input_type -> mwopitz.todo.v1.UpdateTaskRequest
+	11, // 14: mwopitz.todo.v1.TodoDaemon.DeleteTask:input_type -> mwopitz.todo.v1.DeleteTaskRequest
+	1,  // 15: mwopitz.todo.v1.TodoDaemon.Status:output_type -> mwopitz.todo.v1.StatusResponse
+	6,  // 16: mwopitz.todo.v1.TodoDaemon.CreateTask:output_type -> mwopitz.todo.v1.CreateTaskResponse
+	8,  // 17: mwopitz.todo.v1.TodoDaemon.ListTasks:output_type -> mwopitz.todo.v1.ListTasksResponse
+	10, // 18: mwopitz.todo.v1.TodoDaemon.UpdateTask:output_type -> mwopitz.todo.v1.UpdateTaskResponse
+	12, // 19: mwopitz.todo.v1.TodoDaemon.DeleteTask:output_type -> mwopitz.todo.v1.DeleteTaskResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_daemon_proto_init() }

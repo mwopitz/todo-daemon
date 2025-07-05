@@ -180,6 +180,18 @@ func (c *GRPCController) Status(ctx context.Context, req *pb.StatusRequest) (*pb
 	}, nil
 }
 
+func (c *GRPCController) CreateTask(ctx context.Context, req *pb.CreateTaskRequest) (*pb.CreateTaskResponse, error) {
+	if c.tasks == nil {
+		return nil, status.Errorf(codes.Internal, "no task repository provided")
+	}
+	task := newTaskCreateFromProto(req.GetTask())
+	created, err := c.tasks.Create(ctx, task)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot create task: %v", err)
+	}
+	return &pb.CreateTaskResponse{Task: created.toProto()}, nil
+}
+
 func (c *GRPCController) ListTasks(ctx context.Context, req *pb.ListTasksRequest) (*pb.ListTasksResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
@@ -206,4 +218,18 @@ func (c *GRPCController) UpdateTask(ctx context.Context, req *pb.UpdateTaskReque
 		return nil, status.Errorf(codes.Internal, "cannot update task '%s': %v", id, err)
 	}
 	return &pb.UpdateTaskResponse{Task: task.toProto()}, nil
+}
+
+func (c *GRPCController) DeleteTask(ctx context.Context, req *pb.DeleteTaskRequest) (*pb.DeleteTaskResponse, error) {
+	if c.tasks == nil {
+		return nil, status.Errorf(codes.Internal, "no task repository provided")
+	}
+	id := req.GetId()
+	if err := c.tasks.Delete(ctx, id); err != nil {
+		if IsTaskNotFoundError(err) {
+			return nil, status.Errorf(codes.NotFound, "%v", err)
+		}
+		return nil, status.Errorf(codes.Internal, "cannot delete task '%s': %v", id, err)
+	}
+	return &pb.DeleteTaskResponse{}, nil
 }
