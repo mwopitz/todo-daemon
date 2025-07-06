@@ -11,8 +11,9 @@ import (
 	"time"
 
 	"github.com/gofrs/flock"
-	"github.com/mwopitz/todo-daemon/api/todopb"
 	"github.com/urfave/cli/v3"
+
+	"github.com/mwopitz/todo-daemon/api/todopb"
 )
 
 // ErrAlreadyRunning is returned by [CLI.Exec] when executing the run command
@@ -118,6 +119,10 @@ func (c *CLI) Exec(ctx context.Context, args []string) error {
 	return c.rootCmd.Run(ctx, args)
 }
 
+func (c *CLI) commandNotFound(_ context.Context, _ *cli.Command, name string) {
+	c.logger.Printf("invalid command: '%s'", name)
+}
+
 func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 	lockFile := cmd.String("lock")
 	sockFile := cmd.String("sock")
@@ -151,10 +156,10 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 
 	// Create the To-do Daemon server and run it in a separate goroutine, so we
 	// can wait until either the server stops or the context gets canceled.
-	srv := NewServer(c.logger)
+	srv := newServer(c.logger)
 	done := make(chan error, 1)
 	go func() {
-		done <- srv.Serve("unix", sockFile)
+		done <- srv.serve("unix", sockFile)
 		close(done)
 	}()
 
@@ -166,19 +171,15 @@ func (c *CLI) runServer(ctx context.Context, cmd *cli.Command) error {
 		} else {
 			c.logger.Println(err)
 		}
-		return srv.GracefulStop()
+		return srv.gracefulStop()
 	case err := <-done:
 		return err
 	}
 }
 
-func (c *CLI) commandNotFound(_ context.Context, _ *cli.Command, name string) {
-	c.logger.Printf("invalid command: '%s'", name)
-}
-
 func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
-	client, err := NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -188,7 +189,7 @@ func (c *CLI) printServerStatus(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	status, err := client.ServerStatus(ctx)
+	status, err := client.serverStatus(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot retieve server status: %w", err)
 	}
@@ -208,7 +209,7 @@ func (c *CLI) createTask(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	sockFile := cmd.String("sock")
-	client, err := NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -218,22 +219,22 @@ func (c *CLI) createTask(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	_, err = client.CreateTask(ctx, summary)
+	_, err = client.createTask(ctx, summary)
 	if err != nil {
 		return fmt.Errorf("cannot create task: %w", err)
 	}
 
-	tasks, err := client.ListTasks(ctx)
+	tasks, err := client.listTasks(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot retrieve tasks: %w", err)
 	}
 
-	return c.printTasks(tasks)
+	return printTasks(tasks)
 }
 
 func (c *CLI) listTasks(ctx context.Context, cmd *cli.Command) error {
 	sockFile := cmd.String("sock")
-	client, err := NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -243,12 +244,12 @@ func (c *CLI) listTasks(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	tasks, err := client.ListTasks(ctx)
+	tasks, err := client.listTasks(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot retrieve tasks: %w", err)
 	}
 
-	return c.printTasks(tasks)
+	return printTasks(tasks)
 }
 
 func (c *CLI) completeTask(ctx context.Context, cmd *cli.Command) error {
@@ -258,7 +259,7 @@ func (c *CLI) completeTask(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	sockFile := cmd.String("sock")
-	client, err := NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -268,17 +269,17 @@ func (c *CLI) completeTask(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	_, err = client.CompleteTask(ctx, id)
+	_, err = client.completeTask(ctx, id)
 	if err != nil {
 		return fmt.Errorf("cannot complete task '%s': %w", id, err)
 	}
 
-	tasks, err := client.ListTasks(ctx)
+	tasks, err := client.listTasks(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot retrieve tasks: %w", err)
 	}
 
-	return c.printTasks(tasks)
+	return printTasks(tasks)
 }
 
 func (c *CLI) deleteTask(ctx context.Context, cmd *cli.Command) error {
@@ -288,7 +289,7 @@ func (c *CLI) deleteTask(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	sockFile := cmd.String("sock")
-	client, err := NewClient("unix", sockFile, c.logger)
+	client, err := newClient("unix", sockFile, c.logger)
 	if err != nil {
 		return err
 	}
@@ -298,19 +299,24 @@ func (c *CLI) deleteTask(ctx context.Context, cmd *cli.Command) error {
 		}
 	}()
 
-	if err := client.DeleteTask(ctx, id); err != nil {
+	if err := client.deleteTask(ctx, id); err != nil {
 		return fmt.Errorf("cannot delete task: %w", err)
 	}
 
-	tasks, err := client.ListTasks(ctx)
+	tasks, err := client.listTasks(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot retrieve tasks: %w", err)
 	}
 
-	return c.printTasks(tasks)
+	return printTasks(tasks)
 }
 
-func (c *CLI) printTasks(tasks []*todopb.Task) error {
+func (c *CLI) printVersion(_ context.Context, _ *cli.Command) error {
+	_, err := fmt.Printf("go-daemon version %s\n", c.rootCmd.Version)
+	return err
+}
+
+func printTasks(tasks []*todopb.Task) error {
 	for _, t := range tasks {
 		status := ' '
 		completedAt := t.GetCompletedAt().AsTime()
@@ -322,9 +328,4 @@ func (c *CLI) printTasks(tasks []*todopb.Task) error {
 		}
 	}
 	return nil
-}
-
-func (c *CLI) printVersion(_ context.Context, _ *cli.Command) error {
-	_, err := fmt.Printf("go-daemon version %s\n", c.rootCmd.Version)
-	return err
 }

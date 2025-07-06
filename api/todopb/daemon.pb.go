@@ -62,7 +62,7 @@ func (*StatusRequest) Descriptor() ([]byte, []int) {
 type StatusResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The identifier of the To-do Daemon's server process.
-	Pid int32 `protobuf:"varint,1,opt,name=pid,proto3" json:"pid,omitempty"`
+	Pid uint32 `protobuf:"varint,1,opt,name=pid,proto3" json:"pid,omitempty"`
 	// The URL of the To-do Daemon's REST API.
 	ApiBaseUrl    string `protobuf:"bytes,2,opt,name=api_base_url,json=apiBaseUrl,proto3" json:"api_base_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -99,7 +99,7 @@ func (*StatusResponse) Descriptor() ([]byte, []int) {
 	return file_daemon_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *StatusResponse) GetPid() int32 {
+func (x *StatusResponse) GetPid() uint32 {
 	if x != nil {
 		return x.Pid
 	}
@@ -658,7 +658,7 @@ const file_daemon_proto_rawDesc = "" +
 	"\fdaemon.proto\x12\x0fmwopitz.todo.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0f\n" +
 	"\rStatusRequest\"D\n" +
 	"\x0eStatusResponse\x12\x10\n" +
-	"\x03pid\x18\x01 \x01(\x05R\x03pid\x12 \n" +
+	"\x03pid\x18\x01 \x01(\rR\x03pid\x12 \n" +
 	"\fapi_base_url\x18\x02 \x01(\tR\n" +
 	"apiBaseUrl\"\xe5\x01\n" +
 	"\x04Task\x12\x0e\n" +

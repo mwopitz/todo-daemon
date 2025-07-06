@@ -25,7 +25,7 @@ message StatusRequest {}
 
 message StatusResponse {
   // The identifier of the To-do Daemon's server process.
-  int32 pid = 1;
+  uint32 pid = 1;
   // The URL of the To-do Daemon's REST API.
   string api_base_url = 2;
 }

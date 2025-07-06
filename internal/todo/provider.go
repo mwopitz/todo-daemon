@@ -10,12 +10,16 @@ type ServerStatus struct {
 	APIBaseURL string
 }
 
+// ServerStatusProvider is used to query the status of the To-do Daemon server.
 type ServerStatusProvider interface {
+	// Status returns the current status of the To-do Daemon server.
 	Status(ctx context.Context) (*ServerStatus, error)
 }
 
+// ServerStatusProviderFunc is a function that implements [ServerStatusProvider].
 type ServerStatusProviderFunc func(ctx context.Context) (*ServerStatus, error)
 
+// Status returns the current status of the To-do Daemon server.
 func (f ServerStatusProviderFunc) Status(ctx context.Context) (*ServerStatus, error) {
 	return f(ctx)
 }

@@ -3,9 +3,10 @@ package todo
 import (
 	"time"
 
-	pb "github.com/mwopitz/todo-daemon/api/todopb"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pb "github.com/mwopitz/todo-daemon/api/todopb"
 )
 
 // Task represents a single to-do item.
@@ -98,13 +99,13 @@ func newTaskCreateFromProto(proto *pb.NewTask) *TaskCreate {
 // TaskUpdate represents an modification to a task, which can include changing
 // the summary or marking the task as completed.
 type TaskUpdate struct {
-	Summary     string
-	CompletedAt time.Time
+	Summary     *string
+	CompletedAt *time.Time
 }
 
 type taskUpdateDTO struct {
-	Summary     string    `json:"summary,omitempty"`
-	CompletedAt time.Time `json:"completed_at,omitempty"`
+	Summary     *string    `json:"summary,omitempty"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
 
 func newTaskUpdateFromDTO(dto taskUpdateDTO) *TaskUpdate {
@@ -114,21 +115,17 @@ func newTaskUpdateFromDTO(dto taskUpdateDTO) *TaskUpdate {
 	}
 }
 
-func newTaskUpdateFromProto(proto *pb.TaskUpdate) *TaskUpdate {
-	proto.GetCompletedAt()
-	return &TaskUpdate{
-		Summary:     proto.GetSummary(),
-		CompletedAt: proto.CompletedAt.AsTime(),
+func newTaskUpdateFromProto(proto *pb.TaskUpdate, fields *fieldmaskpb.FieldMask) *TaskUpdate {
+	u := &TaskUpdate{}
+	for _, path := range fields.GetPaths() {
+		switch path {
+		case "summary":
+			summary := proto.GetSummary()
+			u.Summary = &summary
+		case "completed_at":
+			completedAt := proto.GetCompletedAt().AsTime()
+			u.CompletedAt = &completedAt
+		}
 	}
-}
-
-type FieldMask []string
-
-func newFieldMaskFromProto(proto *fieldmaskpb.FieldMask) FieldMask {
-	if proto == nil {
-		return nil
-	}
-	mask := make(FieldMask, len(proto.Paths))
-	copy(mask, proto.Paths)
-	return mask
+	return u
 }

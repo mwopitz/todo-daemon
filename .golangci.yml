@@ -25,7 +25,7 @@ formatters:
       # with the given prefixes are grouped after 3rd-party packages.
       # Default: []
       local-prefixes:
-        - github.com/mwopitz/go-daemon
+        - github.com/mwopitz/todo-daemon
 
     golines:
       # Target maximum line length.
@@ -38,7 +38,7 @@ linters:
   enable:
     - errcheck # checking for unchecked errors, these unchecked errors can be critical bugs in some cases
     - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
-    - gocritic # provides diagnostics that check for bugs, performance and style issuesd
+    - gocritic # provides diagnostics that check for bugs, performance and style issues
     - gosec # inspects source code for security problems
     - govet # reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
     - ineffassign # detects when assignments to existing variables are not used
@@ -48,9 +48,15 @@ linters:
 
   settings:
     gocritic:
-      # Enable all checks.
-      # Default: false
-      enable-all: true
+      # Enable multiple checks by tags in addition to default checks.
+      # Run `GL_DEBUG=gocritic golangci-lint run --enable=gocritic` to see all tags and checks.
+      # See https://github.com/go-critic/go-critic#usage -> section "Tags".
+      # Default: []
+      enable-tags:
+        - diagnostic
+        - style
+        - performance
+        - opinionated
 
     revive:
       # Enable all available rules.
@@ -72,6 +78,8 @@ linters:
         - name: enforce-slice-style
           arguments:
             - make
+        - name: function-length
+          disabled: true # long functions aren't necessarily complex
         # https://github.com/mgechev/revive/blob/HEAD/RULES_DESCRIPTIONS.md#line-length-limit
         - name: line-length-limit
           disabled: true # handled by golines formatter

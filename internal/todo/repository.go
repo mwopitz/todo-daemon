@@ -18,7 +18,7 @@ type TaskRepository interface {
 	Create(ctx context.Context, task *TaskCreate) (*Task, error)
 	// Update modifies an existing task in the repository. If the task does not
 	// exist, it returns a [TaskNotFoundError].
-	Update(ctx context.Context, id string, update *TaskUpdate, fields FieldMask) (*Task, error)
+	Update(ctx context.Context, id string, update *TaskUpdate) (*Task, error)
 	// Delete removes an existing task from the repository. If the task does not
 	// exist, it returns a [TaskNotFoundError].
 	Delete(ctx context.Context, id string) error
@@ -68,7 +68,7 @@ func (db *InMemoryTaskDB) Create(_ context.Context, task *TaskCreate) (*Task, er
 }
 
 // Update modifies an existing task in the task map
-func (db *InMemoryTaskDB) Update(_ context.Context, id string, update *TaskUpdate, fields FieldMask) (*Task, error) {
+func (db *InMemoryTaskDB) Update(_ context.Context, id string, update *TaskUpdate) (*Task, error) {
 	if update == nil {
 		return nil, errors.New("update cannot be nil")
 	}
@@ -79,12 +79,12 @@ func (db *InMemoryTaskDB) Update(_ context.Context, id string, update *TaskUpdat
 		return nil, NewTaskNotFoundError(id)
 	}
 	now := time.Now()
-	if slices.Contains(fields, "summary") {
-		t.Summary = update.Summary
+	if update.Summary != nil {
+		t.Summary = *update.Summary
 		t.UpdatedAt = now
 	}
-	if slices.Contains(fields, "completed_at") {
-		t.CompletedAt = update.CompletedAt
+	if update.CompletedAt != nil {
+		t.CompletedAt = *update.CompletedAt
 		t.UpdatedAt = now
 	}
 	db.tasks[t.ID] = t
