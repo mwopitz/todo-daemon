@@ -7,27 +7,23 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/mwopitz/todo-daemon/internal/daemon"
+	"github.com/mwopitz/todo-daemon/internal/cli"
+	"github.com/mwopitz/todo-daemon/internal/config"
 )
 
-// Version is the version of the To-do Daemon.
-var Version = "0.0.0"
-
 func main() {
-	logger := log.New(os.Stderr, "go-daemon: ", log.Lmsgprefix)
-	cli := daemon.NewCLI(Version, logger)
+	cmd := cli.NewTodoDaemonCommand(config.New())
 	ctx, cancel := context.WithCancelCause(context.Background())
 
 	errchan := make(chan error, 1)
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		errchan <- cli.Exec(ctx, os.Args)
+		errchan <- cmd.Run(ctx, os.Args)
 		close(errchan)
 	}()
 
@@ -40,6 +36,7 @@ func main() {
 	}
 
 	if err != nil {
-		logger.Fatal(err)
+		fmt.Fprintf(os.Stderr, "todo-daemon: %v\n", err)
+		os.Exit(1)
 	}
 }

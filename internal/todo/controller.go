@@ -1,10 +1,9 @@
 package todo
 
 import (
-	"cmp"
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"math"
 	"net/http"
 
@@ -16,16 +15,15 @@ import (
 
 // HTTPController handles requests to the REST API endpoints.
 type HTTPController struct {
-	logger *log.Logger
+	logger *slog.Logger
 	tasks  TaskRepository
 }
 
-// NewHTTPController creates an [HTTPController] with the given [TaskRepository]
-// and an optional logger. If no logger is provided, the HTTP controller will
-// use [log.Default].
-func NewHTTPController(tasks TaskRepository, logger *log.Logger) *HTTPController {
+// NewHTTPController creates an [HTTPController] with the given
+// [TaskRepository].
+func NewHTTPController(tasks TaskRepository) *HTTPController {
 	return &HTTPController{
-		logger: cmp.Or(logger, log.Default()),
+		logger: slog.Default(),
 		tasks:  tasks,
 	}
 }
@@ -37,22 +35,22 @@ func (c *HTTPController) respond(w http.ResponseWriter, code int, data any) {
 		return
 	}
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		c.logger.Printf("cannot write response: %v", err)
+		c.logger.Warn("cannot write response", "cause", err)
 	}
 }
 
 // CreateTask handles requests to create a new task.
 func (c *HTTPController) CreateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
+	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
 
 	task, err := c.doCreateTask(r)
 	if err != nil {
-		c.logger.Println(err)
+		c.logger.Warn("cannot create task", "cause", err)
 		c.respond(w, err.status, err)
 		return
 	}
 
-	c.logger.Printf("created task %s: %s", task.ID, task.Summary)
+	c.logger.Info("created task", "id", task.ID, "summary", task.Summary)
 	c.respond(w, http.StatusCreated, task)
 }
 
@@ -71,16 +69,16 @@ func (c *HTTPController) doCreateTask(r *http.Request) (*taskDTO, *restError) {
 
 // ListTasks handles the request to retrieve tasks.
 func (c *HTTPController) ListTasks(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
+	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
 
 	tasks, err := c.doListTasks(r)
 	if err != nil {
-		c.logger.Println(err)
+		c.logger.Warn("cannot list tasks", "cause", err)
 		c.respond(w, err.status, err)
 		return
 	}
 
-	c.logger.Printf("retrieved %d tasks", len(tasks))
+	c.logger.Info("retrieved tasks", "count", len(tasks))
 	c.respond(w, http.StatusOK, tasks)
 }
 
@@ -94,16 +92,16 @@ func (c *HTTPController) doListTasks(r *http.Request) ([]taskDTO, *restError) {
 
 // UpdateTask handles requests to update an existing task.
 func (c *HTTPController) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
+	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
 
 	task, err := c.doUpdateTask(r)
 	if err != nil {
-		c.logger.Println(err)
+		c.logger.Warn("cannot update task", "cause", err)
 		c.respond(w, err.status, err)
 		return
 	}
 
-	c.logger.Printf("updated task %s: %s", task.ID, task.Summary)
+	c.logger.Info("updated task", "id", task.ID, "summary", task.Summary)
 	c.respond(w, http.StatusOK, task)
 }
 
@@ -123,10 +121,10 @@ func (c *HTTPController) doUpdateTask(r *http.Request) (*taskDTO, *restError) {
 
 // DeleteTask handles requests to delete an existing task.
 func (c *HTTPController) DeleteTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Printf("handling HTTP request %s %s", r.Method, r.URL.Path)
+	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
 
 	if err := c.doDeleteTask(r); err != nil {
-		c.logger.Println(err)
+		c.logger.Warn("cannot delete task", "cause", err)
 		c.respond(w, err.status, err)
 		return
 	}
@@ -148,20 +146,13 @@ func (c *HTTPController) doDeleteTask(r *http.Request) *restError {
 // GRPCController handles requests to the gRPC API endpoints.
 type GRPCController struct {
 	pb.UnimplementedTodoDaemonServer
-	logger *log.Logger
 	server ServerStatusProvider
 	tasks  TaskRepository
 }
 
-// NewGRPCController creates a [GRPCController] with the given providers and an
-// optional logger. If no logger is provided, it will use [log.Default].
-func NewGRPCController(
-	server ServerStatusProvider,
-	tasks TaskRepository,
-	logger *log.Logger,
-) *GRPCController {
+// NewGRPCController creates a [GRPCController] with the given providers.
+func NewGRPCController(server ServerStatusProvider, tasks TaskRepository) *GRPCController {
 	return &GRPCController{
-		logger: cmp.Or(logger, log.Default()),
 		server: server,
 		tasks:  tasks,
 	}

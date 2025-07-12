@@ -1,10 +1,9 @@
-package daemon
+// Package client implements the gRPC client of the To-do Daemon.
+package client
 
 import (
-	"cmp"
 	"context"
 	"fmt"
-	"log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -14,16 +13,15 @@ import (
 	pb "github.com/mwopitz/todo-daemon/api/todopb"
 )
 
-// client is used for communicating with the To-do Daemon server.
-type client struct {
-	logger *log.Logger
+// Client is used for communicating with the To-do Daemon's gRPC server.
+type Client struct {
 	conn   *grpc.ClientConn
 	daemon pb.TodoDaemonClient
 }
 
-// newClient creates a To-do Daemon client and connects it to the server
-// listening on the specified network address.
-func newClient(network, address string, logger *log.Logger) (*client, error) {
+// New creates a To-do Daemon client and connects it to the server listening on
+// the specified network address.
+func New(network, address string) (*Client, error) {
 	target := fmt.Sprintf("%s:%s", network, address)
 	conn, err := grpc.NewClient(
 		target,
@@ -32,27 +30,27 @@ func newClient(network, address string, logger *log.Logger) (*client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to %s: %w", target, err)
 	}
-	return &client{
-		logger: cmp.Or(logger, log.Default()),
+	return &Client{
 		conn:   conn,
 		daemon: pb.NewTodoDaemonClient(conn),
 	}, nil
 }
 
 // Close closes the connection to the To-do Daemon server.
-func (c *client) Close() error {
+func (c *Client) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
 	}
 	return nil
 }
 
-// serverStatus retrieves the address of the To-do Daemon server.
-func (c *client) serverStatus(ctx context.Context) (*pb.StatusResponse, error) {
+// ServerStatus retrieves the address of the To-do Daemon server.
+func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusResponse, error) {
 	return c.daemon.Status(ctx, &pb.StatusRequest{})
 }
 
-func (c *client) createTask(ctx context.Context, summary string) (*pb.Task, error) {
+// CreateTask creates the specified task in the to-do list.
+func (c *Client) CreateTask(ctx context.Context, summary string) (*pb.Task, error) {
 	task := &pb.NewTask{Summary: summary}
 	resp, err := c.daemon.CreateTask(ctx, &pb.CreateTaskRequest{Task: task})
 	if err != nil {
@@ -61,8 +59,8 @@ func (c *client) createTask(ctx context.Context, summary string) (*pb.Task, erro
 	return resp.GetTask(), nil
 }
 
-// listTasks retrieves the list of tasks from the To-do Daemon server.
-func (c *client) listTasks(ctx context.Context) ([]*pb.Task, error) {
+// ListTasks retrieves the list of tasks from the To-do Daemon server.
+func (c *Client) ListTasks(ctx context.Context) ([]*pb.Task, error) {
 	resp, err := c.daemon.ListTasks(ctx, &pb.ListTasksRequest{})
 	if err != nil {
 		return nil, err
@@ -70,8 +68,8 @@ func (c *client) listTasks(ctx context.Context) ([]*pb.Task, error) {
 	return resp.GetTasks(), nil
 }
 
-// completeTask marks the specified task as completed.
-func (c *client) completeTask(ctx context.Context, id string) (*pb.Task, error) {
+// CompleteTask marks the specified task as completed.
+func (c *Client) CompleteTask(ctx context.Context, id string) (*pb.Task, error) {
 	update := &pb.TaskUpdate{CompletedAt: timestamppb.Now()}
 	fields, err := fieldmaskpb.New(update, "completed_at")
 	if err != nil {
@@ -89,7 +87,8 @@ func (c *client) completeTask(ctx context.Context, id string) (*pb.Task, error) 
 	return res.GetTask(), nil
 }
 
-func (c *client) deleteTask(ctx context.Context, id string) error {
+// DeleteTask removes the specified task from the to-do list.
+func (c *Client) DeleteTask(ctx context.Context, id string) error {
 	_, err := c.daemon.DeleteTask(ctx, &pb.DeleteTaskRequest{Id: id})
 	if err != nil {
 		return fmt.Errorf("cannot delete task: %w", err)
