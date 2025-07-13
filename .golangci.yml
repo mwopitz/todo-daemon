@@ -52,7 +52,7 @@ linters:
       # Run `GL_DEBUG=gocritic golangci-lint run --enable=gocritic` to see all tags and checks.
       # See https://github.com/go-critic/go-critic#usage -> section "Tags".
       # Default: []
-      enable-tags:
+      enabled-tags:
         - diagnostic
         - style
         - performance
