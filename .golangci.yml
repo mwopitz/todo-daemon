@@ -57,6 +57,8 @@ linters:
         - style
         - performance
         - opinionated
+      disabled-tags:
+        - experimental
 
     revive:
       # Enable all available rules.
