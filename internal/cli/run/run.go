@@ -25,9 +25,9 @@ var ErrAlreadyRunning = errors.New("another instance is already running")
 
 // Executor is used for executing the 'run' command.
 type Executor struct {
-	// LockFile is the path to the lock file that the executor will acquire
-	// before starting the server.
-	LockFile string
+	// Lock is the file lock that the executor tries to acquire before starting
+	// the server.
+	Lock *flock.Flock
 	// SockFile is the path to the Unix socket file that the server is supposed
 	// to be listening on.
 	SockFile string
@@ -36,40 +36,26 @@ type Executor struct {
 // NewExecutor creates an executor for the specified 'run' command.
 func NewExecutor(cmd *cli.Command) (*Executor, error) {
 	return &Executor{
-		LockFile: cmd.String("lock"),
+		Lock:     flock.New(cmd.String("lock")),
 		SockFile: cmd.String("sock"),
 	}, nil
 }
 
 // Execute executes the 'run' command.
 func (e *Executor) Execute(ctx context.Context) error {
-	lockf := e.LockFile
-	sockf := e.SockFile
-
-	err := os.MkdirAll(filepath.Dir(lockf), 0o700)
+	unlock, err := e.lock()
 	if err != nil {
 		return fmt.Errorf("cannot acquire file lock: %w", err)
 	}
-	lock := flock.New(lockf)
-	locked, err := lock.TryLock()
-	if err != nil {
-		return fmt.Errorf("cannot acquire file lock: %w", err)
-	}
-	if !locked {
-		return ErrAlreadyRunning
-	}
-	defer func() {
-		if e := lock.Unlock(); e != nil {
-			slog.Warn("cannot release lock file", "cause", e)
-		}
-	}()
-	slog.Info("acquired file lock", "path", lockf)
+	defer unlock()
+	slog.Info("acquired file lock", "path", e.Lock.Path())
 
-	err = os.MkdirAll(filepath.Dir(sockf), 0o700)
+	err = os.MkdirAll(filepath.Dir(e.SockFile), 0o700)
 	if err != nil {
 		return fmt.Errorf("cannot create socket directory: %w", err)
 	}
-	if err := os.Remove(sockf); err != nil && !os.IsNotExist(err) {
+	err = os.Remove(e.SockFile)
+	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("cannot remove socket file: %w", err)
 	}
 
@@ -86,14 +72,32 @@ func (e *Executor) Execute(ctx context.Context) error {
 	case <-ctx.Done():
 		err := ctx.Err()
 		if errors.Is(err, context.Canceled) {
-			slog.Info("stopping server...", "cause", context.Cause(ctx))
-		} else {
-			slog.Info("stopping server...", "cause", err)
+			err = context.Cause(ctx)
 		}
+		slog.Info("stopping server...", "cause", err)
 		return srv.StopGracefully()
 	case err := <-done:
 		return err
 	}
+}
+
+func (e *Executor) lock() (func(), error) {
+	err := os.MkdirAll(filepath.Dir(e.Lock.Path()), 0o700)
+	if err != nil {
+		return nil, err
+	}
+	locked, err := e.Lock.TryLock()
+	if err != nil {
+		return nil, err
+	}
+	if !locked {
+		return nil, ErrAlreadyRunning
+	}
+	return func() {
+		if uerr := e.Lock.Unlock(); uerr != nil {
+			slog.Warn("cannot release file lock", "cause", err)
+		}
+	}, nil
 }
 
 // NewCommand creates a new 'run' command with the specified configuration.
