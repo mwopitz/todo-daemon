@@ -36,9 +36,9 @@ func runDir() string {
 }
 
 func defaultLockFile() string {
-	return filepath.Join(runDir(), "go-daemon.lock")
+	return filepath.Join(runDir(), "todo-daemon.lock")
 }
 
 func defaultSockFile() string {
-	return filepath.Join(runDir(), "go-daemon.sock")
+	return filepath.Join(runDir(), "todo-daemon.sock")
 }
