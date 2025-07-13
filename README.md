@@ -38,17 +38,29 @@ with the server process.
 
 ## Getting started
 
-1.  [Install Go](https://go.dev/doc/install)
-1.  Build the go-daemon:
-    
-    ```sh
-    go build
-    ```
-1.  Start it:
-    
-    ```sh
-    ./go-daemon run
-    ```
+1. [Install Go](https://go.dev/doc/install)
+1. Build the todo-daemon executable:
+   ```sh
+   go build
+   ```
+1. Start the server process:
+   ```sh
+   ./todo-daemon run
+   ```
+1. Open another terminal and query the status of the server process:
+   ```sh
+   ./todo-daemon status
+   ```
+1. Try fetching the list of to-do tasks via the CLI:
+   ```sh
+   ./todo-daemon tasks list
+   ```
+1. Try fetching the list of to-do tasks via the REST API:
+   ```sh
+   curl "$api_base_url/v1/tasks"
+   ```
+   Here, `$api_base_url` should be the URL returned by the
+   `./todo-daemon status` command earlier.
 
 ## Compiling the gRPC components
 
