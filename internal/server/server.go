@@ -12,11 +12,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 
 	pb "github.com/mwopitz/todo-daemon/api/todopb"
 	"github.com/mwopitz/todo-daemon/internal/todo"
 )
+
+func newInterceptorLoggerFunc(l *slog.Logger) logging.LoggerFunc {
+	return func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
+		l.Log(ctx, slog.Level(lvl), msg, fields...)
+	}
+}
 
 // Server implements the Server of the To-do Daemon. It runs both an HTTP Server,
 // which provides a REST API to external applications, as well as a gRPC Server,
@@ -29,8 +36,20 @@ type Server struct {
 // New creates a new To-do Daemon server with an optional logger. If no
 // logger is provided, it the server uses [slog.Default].
 func New() *Server {
+	logger := slog.Default()
+	loggingOpts := []logging.Option{
+		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
+	}
+	loggerFunc := newInterceptorLoggerFunc(logger)
 	return &Server{
-		grpcServer: grpc.NewServer(),
+		grpcServer: grpc.NewServer(
+			grpc.ChainUnaryInterceptor(
+				logging.UnaryServerInterceptor(loggerFunc, loggingOpts...),
+			),
+			grpc.ChainStreamInterceptor(
+				logging.StreamServerInterceptor(loggerFunc, loggingOpts...),
+			),
+		),
 		httpServer: &http.Server{
 			ReadTimeout:       5 * time.Second,
 			ReadHeaderTimeout: 2 * time.Second,
