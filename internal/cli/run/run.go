@@ -94,7 +94,7 @@ func (e *Executor) lock() (func(), error) {
 		return nil, ErrAlreadyRunning
 	}
 	return func() {
-		if uerr := e.Lock.Unlock(); uerr != nil {
+		if err := e.Lock.Unlock(); err != nil {
 			slog.Warn("cannot release file lock", "cause", err)
 		}
 	}, nil

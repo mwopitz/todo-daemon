@@ -46,8 +46,8 @@ func (e *Executor) Execute(ctx context.Context) error {
 		return err
 	}
 	defer func() {
-		if closeerr := c.Close(); closeerr != nil {
-			slog.Warn("cannot close client connection", "cause", closeerr)
+		if err := c.Close(); err != nil {
+			slog.Warn("cannot close client connection", "cause", err)
 		}
 	}()
 
