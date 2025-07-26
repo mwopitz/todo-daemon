@@ -13,10 +13,10 @@ import (
 
 var errFullDisk = errors.New("write: no space left on device")
 
-type fullDisk struct{}
+type writerFunc func([]byte) (int, error)
 
-func (d *fullDisk) Write(_ []byte) (int, error) {
-	return 0, errFullDisk
+func (f writerFunc) Write(p []byte) (int, error) {
+	return f(p)
 }
 
 func TestPrintTasks(t *testing.T) {
@@ -51,7 +51,9 @@ func TestPrintTasks(t *testing.T) {
 }
 
 func TestPrintTasksToFullDisk(t *testing.T) {
-	disk := &fullDisk{}
+	fullDisk := writerFunc(func(_ []byte) (int, error) {
+		return 0, errFullDisk
+	})
 	tasks := []*todopb.Task{
 		{
 			Id:      "1",
@@ -59,7 +61,7 @@ func TestPrintTasksToFullDisk(t *testing.T) {
 		},
 	}
 	want := errFullDisk
-	if got := PrintTasks(disk, tasks); !errors.Is(got, want) {
+	if got := PrintTasks(fullDisk, tasks); !errors.Is(got, want) {
 		t.Errorf("got: %v; want: %v", got, want)
 	}
 }
