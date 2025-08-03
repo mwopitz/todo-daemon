@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/mwopitz/todo-daemon/api/todopb"
+	todopb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 )
 
 // PrintTasks pretty-prints the specified to-do list tasks to the given writer.

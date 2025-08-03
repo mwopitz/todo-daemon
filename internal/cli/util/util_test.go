@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/mwopitz/todo-daemon/api/todopb"
+	todopb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 )
 
 var errFullDisk = errors.New("write: no space left on device")

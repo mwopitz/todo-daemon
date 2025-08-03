@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/mwopitz/todo-daemon/api/todopb"
+	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 )
 
 // Task represents a single to-do item.

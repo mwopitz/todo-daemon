@@ -10,13 +10,13 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/mwopitz/todo-daemon/api/todopb"
+	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 )
 
 // Client is used for communicating with the To-do Daemon's gRPC server.
 type Client struct {
-	conn   *grpc.ClientConn
-	daemon pb.TodoDaemonClient
+	conn    *grpc.ClientConn
+	service pb.TodoServiceClient
 }
 
 // New creates a To-do Daemon client and connects it to the server listening on
@@ -31,8 +31,8 @@ func New(network, address string) (*Client, error) {
 		return nil, fmt.Errorf("cannot connect to %s: %w", target, err)
 	}
 	return &Client{
-		conn:   conn,
-		daemon: pb.NewTodoDaemonClient(conn),
+		conn:    conn,
+		service: pb.NewTodoServiceClient(conn),
 	}, nil
 }
 
@@ -46,13 +46,13 @@ func (c *Client) Close() error {
 
 // ServerStatus retrieves the address of the To-do Daemon server.
 func (c *Client) ServerStatus(ctx context.Context) (*pb.StatusResponse, error) {
-	return c.daemon.Status(ctx, &pb.StatusRequest{})
+	return c.service.Status(ctx, &pb.StatusRequest{})
 }
 
 // CreateTask creates the specified task in the to-do list.
 func (c *Client) CreateTask(ctx context.Context, summary string) (*pb.Task, error) {
 	task := &pb.NewTask{Summary: summary}
-	resp, err := c.daemon.CreateTask(ctx, &pb.CreateTaskRequest{Task: task})
+	resp, err := c.service.CreateTask(ctx, &pb.CreateTaskRequest{Task: task})
 	if err != nil {
 		return nil, fmt.Errorf("cannot create task: %w", err)
 	}
@@ -61,7 +61,7 @@ func (c *Client) CreateTask(ctx context.Context, summary string) (*pb.Task, erro
 
 // ListTasks retrieves the list of tasks from the To-do Daemon server.
 func (c *Client) ListTasks(ctx context.Context) ([]*pb.Task, error) {
-	resp, err := c.daemon.ListTasks(ctx, &pb.ListTasksRequest{})
+	resp, err := c.service.ListTasks(ctx, &pb.ListTasksRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (c *Client) CompleteTask(ctx context.Context, id string) (*pb.Task, error) 
 		Update: update,
 		Fields: fields,
 	}
-	res, err := c.daemon.UpdateTask(ctx, req)
+	res, err := c.service.UpdateTask(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (c *Client) CompleteTask(ctx context.Context, id string) (*pb.Task, error) 
 
 // DeleteTask removes the specified task from the to-do list.
 func (c *Client) DeleteTask(ctx context.Context, id string) error {
-	_, err := c.daemon.DeleteTask(ctx, &pb.DeleteTaskRequest{Id: id})
+	_, err := c.service.DeleteTask(ctx, &pb.DeleteTaskRequest{Id: id})
 	if err != nil {
 		return fmt.Errorf("cannot delete task: %w", err)
 	}

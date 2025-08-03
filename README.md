@@ -68,26 +68,8 @@ with the server process.
 
 ## Compiling the gRPC components
 
-1.  [Install the protobuf compiler](https://protobuf.dev/installation/).
-    
-    For example, on Linux:
-    
-    ```sh
-    pb_rel=https://github.com/protocolbuffers/protobuf/releases
-    pb_ver=31.1
-    curl -LO "$pb_rel/download/v$pb_ver/protoc-$pb_ver-linux-x86_64.zip"
-    unzip "protoc-$pb_ver-linux-x86_64.zip" -d "$HOME/.local"
-    ```
-1.  Install the Go plugins for the protobuf compiler:
-    
-    ```sh
-    go install tool
-    ```
-1.  Execute the compiler:
-    
-    ```sh
-    protoc --proto_path=./api/todopb \
-      --go_out module=github.com/mwopitz/todo-daemon:. \
-      --go-grpc_out module=github.com/mwopitz/todo-daemon:. \
-      ./api/todopb/daemon.proto
-    ```
+1. [Install the Buf CLI](https://buf.build/docs/cli/installation/#install-the-buf-cli).
+1. Execute the following command:
+   ```sh
+   buf generate
+   ```

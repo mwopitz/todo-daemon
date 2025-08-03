@@ -1,14 +1,12 @@
 syntax = "proto3";
 
-package mwopitz.todo.v1;
-
-option go_package = "github.com/mwopitz/todo-daemon/api/todopb";
+package todo.v1;
 
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
 // The gRPC interface of the To-do Daemon.
-service TodoDaemon {
+service TodoService {
   // Queries the status of the To-do Daemon.
   rpc Status (StatusRequest) returns (StatusResponse) {}
   // Adds a new task to the to-do list.

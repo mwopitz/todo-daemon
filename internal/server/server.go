@@ -15,7 +15,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 
-	pb "github.com/mwopitz/todo-daemon/api/todopb"
+	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 	"github.com/mwopitz/todo-daemon/internal/todo"
 )
 
@@ -136,7 +136,7 @@ func (s *Server) initHTTPServer(tasks todo.TaskRepository) {
 
 func (s *Server) initGRPCServer(server todo.ServerStatusProvider, tasks todo.TaskRepository) {
 	ctrl := todo.NewGRPCController(server, tasks)
-	pb.RegisterTodoDaemonServer(s.grpcServer, ctrl)
+	pb.RegisterTodoServiceServer(s.grpcServer, ctrl)
 }
 
 // StopGracefully stops both the HTTP server and the gRPC server. It waits until

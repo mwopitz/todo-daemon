@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb "github.com/mwopitz/todo-daemon/api/todopb"
+	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
 )
 
 // HTTPController handles requests to the REST API endpoints.
@@ -145,7 +145,7 @@ func (c *HTTPController) doDeleteTask(r *http.Request) *restError {
 
 // GRPCController handles requests to the gRPC API endpoints.
 type GRPCController struct {
-	pb.UnimplementedTodoDaemonServer
+	pb.UnimplementedTodoServiceServer
 	server ServerStatusProvider
 	tasks  TaskRepository
 }
