@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
 	"github.com/mwopitz/todo-daemon/internal/todo"
@@ -25,7 +27,7 @@ func newInterceptorLoggerFunc(l *slog.Logger) logging.LoggerFunc {
 	}
 }
 
-// Server implements the Server of the To-do Daemon. It runs both an HTTP Server,
+// Server implements the server of the To-do Daemon. It runs both an HTTP Server,
 // which provides a REST API to external applications, as well as a gRPC Server,
 // which is used for internal communication between the To-do Daemon processes.
 type Server struct {
@@ -41,21 +43,27 @@ func New() *Server {
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
 	}
 	loggerFunc := newInterceptorLoggerFunc(logger)
-	return &Server{
-		grpcServer: grpc.NewServer(
-			grpc.ChainUnaryInterceptor(
-				logging.UnaryServerInterceptor(loggerFunc, loggingOpts...),
-			),
-			grpc.ChainStreamInterceptor(
-				logging.StreamServerInterceptor(loggerFunc, loggingOpts...),
-			),
+
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			logging.UnaryServerInterceptor(loggerFunc, loggingOpts...),
 		),
-		httpServer: &http.Server{
-			ReadTimeout:       5 * time.Second,
-			ReadHeaderTimeout: 2 * time.Second,
-			WriteTimeout:      10 * time.Second,
-			IdleTimeout:       60 * time.Second,
-		},
+		grpc.ChainStreamInterceptor(
+			logging.StreamServerInterceptor(loggerFunc, loggingOpts...),
+		),
+	)
+
+	httpServer := &http.Server{
+		Handler:           http.NewServeMux(),
+		ReadTimeout:       5 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	return &Server{
+		grpcServer: grpcServer,
+		httpServer: httpServer,
 	}
 }
 
@@ -77,25 +85,40 @@ func (s *Server) Serve(network, address string) error {
 		}
 	}
 
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+	if err := todopb.RegisterTodoServiceHandlerFromEndpoint(
+		ctx,
+		mux,
+		fmt.Sprintf("%s:%s", network, address),
+		opts,
+	); err != nil {
+		return fmt.Errorf("cannot start gRPC gateway: %w", err)
+	}
+	s.httpServer.Handler.(*http.ServeMux).Handle("/api/", http.StripPrefix("/api", mux))
+
 	grpcListener, err := net.Listen(network, address)
 	if err != nil {
 		return fmt.Errorf("cannot start gRPC server: %w", err)
 	}
 
-	slog.Info("gRPC server started", "addr", grpcListener.Addr())
+	grpcAddr := grpcListener.Addr().String()
+	slog.Info("gRPC server listening on", "addr", grpcAddr)
 
 	httpListener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		return fmt.Errorf("cannot start HTTP server: %w", err)
 	}
 
-	httpAddr := httpListener.Addr()
-	slog.Info("HTTP server started", "addr", httpAddr)
+	httpAddr := httpListener.Addr().String()
+	slog.Info("HTTP server listening on", "addr", httpAddr)
 
 	status := func(_ context.Context) (*todo.ServerStatus, error) {
 		u := url.URL{
 			Scheme: "http",
-			Host:   httpAddr.String(),
+			Host:   httpAddr,
 			Path:   "/api",
 		}
 		return &todo.ServerStatus{
@@ -104,8 +127,9 @@ func (s *Server) Serve(network, address string) error {
 		}, nil
 	}
 
-	s.initHTTPServer(db)
-	s.initGRPCServer(todo.ServerStatusProviderFunc(status), db)
+	// Connect the gRPC server to the controller.
+	ctrl := todo.NewController(todo.ServerStatusProviderFunc(status), db)
+	todopb.RegisterTodoServiceServer(s.grpcServer, ctrl)
 
 	grpcDone := make(chan error, 1)
 	go func() {
@@ -120,23 +144,6 @@ func (s *Server) Serve(network, address string) error {
 	}()
 
 	return errors.Join(<-grpcDone, <-httpDone)
-}
-
-func (s *Server) initHTTPServer(tasks todo.TaskRepository) {
-	ctrl := todo.NewHTTPController(tasks)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/v1/tasks", ctrl.ListTasks)
-	mux.HandleFunc("POST /api/v1/tasks", ctrl.CreateTask)
-	mux.HandleFunc("PATCH /api/v1/tasks/{id}", ctrl.UpdateTask)
-	mux.HandleFunc("DELETE /api/v1/tasks/{id}", ctrl.DeleteTask)
-
-	s.httpServer.Handler = mux
-}
-
-func (s *Server) initGRPCServer(server todo.ServerStatusProvider, tasks todo.TaskRepository) {
-	ctrl := todo.NewGRPCController(server, tasks)
-	todopb.RegisterTodoServiceServer(s.grpcServer, ctrl)
 }
 
 // StopGracefully stops both the HTTP server and the gRPC server. It waits until

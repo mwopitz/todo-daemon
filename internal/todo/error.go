@@ -3,7 +3,6 @@ package todo
 import (
 	"errors"
 	"fmt"
-	"net/http"
 )
 
 // TaskNotFoundError should be returned by [TaskRepository.Update] and
@@ -27,33 +26,4 @@ func IsTaskNotFoundError(err error) bool {
 
 func (e *TaskNotFoundError) Error() string {
 	return fmt.Sprintf("no such task: '%s'", e.ID)
-}
-
-type restError struct {
-	cause   error
-	status  int
-	Message string `json:"message"`
-}
-
-func (e *restError) Error() string {
-	if e.cause == nil {
-		return e.Message
-	}
-	return fmt.Sprintf("%s: %s", e.Message, e.cause.Error())
-}
-
-func (e *restError) Cause() error {
-	return e.cause
-}
-
-func newBadRequestError(msg string, cause error) *restError {
-	return &restError{cause, http.StatusBadRequest, msg}
-}
-
-func newInternalServerError(msg string, cause error) *restError {
-	return &restError{cause, http.StatusInternalServerError, msg}
-}
-
-func newNotFoundError(msg string, cause error) *restError {
-	return &restError{cause, http.StatusNotFound, msg}
 }

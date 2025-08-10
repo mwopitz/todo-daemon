@@ -7,6 +7,7 @@
 package todo
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -655,7 +656,7 @@ var File_todo_v1_todo_proto protoreflect.FileDescriptor
 
 const file_todo_v1_todo_proto_rawDesc = "" +
 	"\n" +
-	"\x12todo/v1/todo.proto\x12\atodo.v1\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0f\n" +
+	"\x12todo/v1/todo.proto\x12\atodo.v1\x1a\x1cgoogle/api/annotations.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0f\n" +
 	"\rStatusRequest\"D\n" +
 	"\x0eStatusResponse\x12\x10\n" +
 	"\x03pid\x18\x01 \x01(\rR\x03pid\x12 \n" +
@@ -690,16 +691,16 @@ const file_todo_v1_todo_proto_rawDesc = "" +
 	"\x04task\x18\x01 \x01(\v2\r.todo.v1.TaskR\x04task\"#\n" +
 	"\x11DeleteTaskRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
-	"\x12DeleteTaskResponse2\xeb\x02\n" +
+	"\x12DeleteTaskResponse2\xc2\x03\n" +
 	"\vTodoService\x12;\n" +
-	"\x06Status\x12\x16.todo.v1.StatusRequest\x1a\x17.todo.v1.StatusResponse\"\x00\x12G\n" +
+	"\x06Status\x12\x16.todo.v1.StatusRequest\x1a\x17.todo.v1.StatusResponse\"\x00\x12^\n" +
 	"\n" +
-	"CreateTask\x12\x1a.todo.v1.CreateTaskRequest\x1a\x1b.todo.v1.CreateTaskResponse\"\x00\x12D\n" +
-	"\tListTasks\x12\x19.todo.v1.ListTasksRequest\x1a\x1a.todo.v1.ListTasksResponse\"\x00\x12G\n" +
+	"CreateTask\x12\x1a.todo.v1.CreateTaskRequest\x1a\x1b.todo.v1.CreateTaskResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x04task\"\t/v1/tasks\x12U\n" +
+	"\tListTasks\x12\x19.todo.v1.ListTasksRequest\x1a\x1a.todo.v1.ListTasksResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/tasks\x12`\n" +
 	"\n" +
-	"UpdateTask\x12\x1a.todo.v1.UpdateTaskRequest\x1a\x1b.todo.v1.UpdateTaskResponse\"\x00\x12G\n" +
+	"UpdateTask\x12\x1a.todo.v1.UpdateTaskRequest\x1a\x1b.todo.v1.UpdateTaskResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*2\x0e/v1/tasks/{id}\x12]\n" +
 	"\n" +
-	"DeleteTask\x12\x1a.todo.v1.DeleteTaskRequest\x1a\x1b.todo.v1.DeleteTaskResponse\"\x00B,Z*github.com/mwopitz/todo-daemon/api/v1/todob\x06proto3"
+	"DeleteTask\x12\x1a.todo.v1.DeleteTaskRequest\x1a\x1b.todo.v1.DeleteTaskResponse\"\x16\x82\xd3\xe4\x93\x02\x10*\x0e/v1/tasks/{id}B,Z*github.com/mwopitz/todo-daemon/api/v1/todob\x06proto3"
 
 var (
 	file_todo_v1_todo_proto_rawDescOnce sync.Once

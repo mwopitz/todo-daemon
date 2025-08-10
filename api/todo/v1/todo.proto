@@ -4,6 +4,7 @@ package todo.v1;
 
 option go_package = "github.com/mwopitz/todo-daemon/api/v1/todo";
 
+import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -12,13 +13,31 @@ service TodoService {
   // Queries the status of the To-do Daemon.
   rpc Status (StatusRequest) returns (StatusResponse) {}
   // Adds a new task to the to-do list.
-  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {
+    option (google.api.http) = {
+      post: "/v1/tasks"
+      body: "task"
+    };
+  }
   // List all tasks available in the to-do list.
-  rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {}
+  rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {
+    option (google.api.http) = {
+      get: "/v1/tasks"
+    };
+  }
   // Updates a task in the to-do list.
-  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {}
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {
+    option (google.api.http) = {
+      patch: "/v1/tasks/{id}"
+      body: "*"
+    };
+  }
   // Removes a task from the to-do list
-  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse) {}
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse) {
+    option (google.api.http) = {
+      delete: "/v1/tasks/{id}"
+    };
+  }
 }
 
 message StatusRequest {}

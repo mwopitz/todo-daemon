@@ -2,10 +2,7 @@ package todo
 
 import (
 	"context"
-	"encoding/json"
-	"log/slog"
 	"math"
-	"net/http"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,153 +10,23 @@ import (
 	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
 )
 
-// HTTPController handles requests to the REST API endpoints.
-type HTTPController struct {
-	logger *slog.Logger
-	tasks  TaskRepository
-}
-
-// NewHTTPController creates an [HTTPController] with the given
-// [TaskRepository].
-func NewHTTPController(tasks TaskRepository) *HTTPController {
-	return &HTTPController{
-		logger: slog.Default(),
-		tasks:  tasks,
-	}
-}
-
-func (c *HTTPController) respond(w http.ResponseWriter, code int, data any) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(code)
-	if data == nil {
-		return
-	}
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		c.logger.Warn("cannot write response", "cause", err)
-	}
-}
-
-// CreateTask handles requests to create a new task.
-func (c *HTTPController) CreateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
-
-	task, err := c.doCreateTask(r)
-	if err != nil {
-		c.logger.Warn("cannot create task", "cause", err)
-		c.respond(w, err.status, err)
-		return
-	}
-
-	c.logger.Info("created task", "id", task.ID, "summary", task.Summary)
-	c.respond(w, http.StatusCreated, task)
-}
-
-func (c *HTTPController) doCreateTask(r *http.Request) (*taskDTO, *restError) {
-	dto := &taskCreateDTO{}
-	if err := json.NewDecoder(r.Body).Decode(dto); err != nil {
-		return nil, newBadRequestError("invalid task", err)
-	}
-	taskCreate := newTaskCreateFromDTO(dto)
-	task, err := c.tasks.Create(r.Context(), taskCreate)
-	if err != nil {
-		return nil, newInternalServerError("cannot create task", err)
-	}
-	return task.toDTO(), nil
-}
-
-// ListTasks handles the request to retrieve tasks.
-func (c *HTTPController) ListTasks(w http.ResponseWriter, r *http.Request) {
-	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
-
-	tasks, err := c.doListTasks(r)
-	if err != nil {
-		c.logger.Warn("cannot list tasks", "cause", err)
-		c.respond(w, err.status, err)
-		return
-	}
-
-	c.logger.Info("retrieved tasks", "count", len(tasks))
-	c.respond(w, http.StatusOK, tasks)
-}
-
-func (c *HTTPController) doListTasks(r *http.Request) ([]taskDTO, *restError) {
-	tasks, err := c.tasks.All(r.Context())
-	if err != nil {
-		return nil, newInternalServerError("cannot retrieve tasks", err)
-	}
-	return tasks.toDTOs(), nil
-}
-
-// UpdateTask handles requests to update an existing task.
-func (c *HTTPController) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
-
-	task, err := c.doUpdateTask(r)
-	if err != nil {
-		c.logger.Warn("cannot update task", "cause", err)
-		c.respond(w, err.status, err)
-		return
-	}
-
-	c.logger.Info("updated task", "id", task.ID, "summary", task.Summary)
-	c.respond(w, http.StatusOK, task)
-}
-
-func (c *HTTPController) doUpdateTask(r *http.Request) (*taskDTO, *restError) {
-	id := r.PathValue("id")
-	updateDTO := taskUpdateDTO{}
-	if err := json.NewDecoder(r.Body).Decode(&updateDTO); err != nil {
-		return nil, newBadRequestError("invalid task data", err)
-	}
-	update := newTaskUpdateFromDTO(updateDTO)
-	task, err := c.tasks.Update(r.Context(), id, update)
-	if err != nil {
-		return nil, newInternalServerError("cannot update task", err)
-	}
-	return task.toDTO(), nil
-}
-
-// DeleteTask handles requests to delete an existing task.
-func (c *HTTPController) DeleteTask(w http.ResponseWriter, r *http.Request) {
-	c.logger.Info("handling HTTP request", "method", r.Method, "endpoint", r.URL.Path)
-
-	if err := c.doDeleteTask(r); err != nil {
-		c.logger.Warn("cannot delete task", "cause", err)
-		c.respond(w, err.status, err)
-		return
-	}
-
-	c.respond(w, http.StatusNoContent, nil)
-}
-
-func (c *HTTPController) doDeleteTask(r *http.Request) *restError {
-	err := c.tasks.Delete(r.Context(), r.PathValue("id"))
-	if err != nil {
-		if IsTaskNotFoundError(err) {
-			return newNotFoundError("no such task", err)
-		}
-		return newInternalServerError("cannot delete task", err)
-	}
-	return nil
-}
-
-// GRPCController handles requests to the gRPC API endpoints.
-type GRPCController struct {
+// Controller handles requests to the gRPC API endpoints.
+type Controller struct {
 	todopb.UnimplementedTodoServiceServer
 	server ServerStatusProvider
 	tasks  TaskRepository
 }
 
-// NewGRPCController creates a [GRPCController] with the given providers.
-func NewGRPCController(server ServerStatusProvider, tasks TaskRepository) *GRPCController {
-	return &GRPCController{
+// NewController creates a [Controller] with the given providers.
+func NewController(server ServerStatusProvider, tasks TaskRepository) *Controller {
+	return &Controller{
 		server: server,
 		tasks:  tasks,
 	}
 }
 
 // Status handles gRPC requests to retrieve the server status.
-func (c *GRPCController) Status(ctx context.Context, _ *todopb.StatusRequest) (*todopb.StatusResponse, error) {
+func (c *Controller) Status(ctx context.Context, _ *todopb.StatusRequest) (*todopb.StatusResponse, error) {
 	if c.server == nil {
 		return nil, status.Errorf(codes.Internal, "no server status provided")
 	}
@@ -178,7 +45,7 @@ func (c *GRPCController) Status(ctx context.Context, _ *todopb.StatusRequest) (*
 }
 
 // CreateTask handles gRPC requests to create a new task in the to-do list.
-func (c *GRPCController) CreateTask(
+func (c *Controller) CreateTask(
 	ctx context.Context,
 	req *todopb.CreateTaskRequest,
 ) (*todopb.CreateTaskResponse, error) {
@@ -194,7 +61,7 @@ func (c *GRPCController) CreateTask(
 }
 
 // ListTasks handles gRPC requests to retrieve tasks from the to-do list.
-func (c *GRPCController) ListTasks(ctx context.Context, _ *todopb.ListTasksRequest) (*todopb.ListTasksResponse, error) {
+func (c *Controller) ListTasks(ctx context.Context, _ *todopb.ListTasksRequest) (*todopb.ListTasksResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
 	}
@@ -206,7 +73,7 @@ func (c *GRPCController) ListTasks(ctx context.Context, _ *todopb.ListTasksReque
 }
 
 // UpdateTask handles gRPC requests to update a task in the to-do list.
-func (c *GRPCController) UpdateTask(
+func (c *Controller) UpdateTask(
 	ctx context.Context,
 	req *todopb.UpdateTaskRequest,
 ) (*todopb.UpdateTaskResponse, error) {
@@ -226,7 +93,7 @@ func (c *GRPCController) UpdateTask(
 }
 
 // DeleteTask handles gRPC requests to delete a task from the to-do list.
-func (c *GRPCController) DeleteTask(
+func (c *Controller) DeleteTask(
 	ctx context.Context,
 	req *todopb.DeleteTaskRequest,
 ) (*todopb.DeleteTaskResponse, error) {

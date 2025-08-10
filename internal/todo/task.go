@@ -22,16 +22,6 @@ type Task struct {
 // Tasks is a list of to-do items.
 type Tasks []Task
 
-func (t *Task) toDTO() *taskDTO {
-	return &taskDTO{
-		ID:          t.ID,
-		Summary:     t.Summary,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-		CompletedAt: t.CompletedAt,
-	}
-}
-
 func (t *Task) toProto() *todopb.Task {
 	return &todopb.Task{
 		Id:          t.ID,
@@ -42,14 +32,6 @@ func (t *Task) toProto() *todopb.Task {
 	}
 }
 
-func (ts Tasks) toDTOs() []taskDTO {
-	dtos := make([]taskDTO, len(ts))
-	for i := range ts {
-		dtos[i].assign(&ts[i])
-	}
-	return dtos
-}
-
 func (ts Tasks) toProtos() []*todopb.Task {
 	protos := make([]*todopb.Task, len(ts))
 	for i := range ts {
@@ -58,36 +40,10 @@ func (ts Tasks) toProtos() []*todopb.Task {
 	return protos
 }
 
-type taskDTO struct {
-	ID          string    `json:"id,omitempty"`
-	Summary     string    `json:"summary,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitzero"`
-	UpdatedAt   time.Time `json:"updated_at,omitzero"`
-	CompletedAt time.Time `json:"completed_at,omitzero"`
-}
-
-func (dto *taskDTO) assign(t *Task) {
-	dto.ID = t.ID
-	dto.Summary = t.Summary
-	dto.CreatedAt = t.CreatedAt
-	dto.UpdatedAt = t.UpdatedAt
-	dto.CompletedAt = t.CompletedAt
-}
-
 // TaskCreate encapsulates the data needed to create a new task.
 type TaskCreate struct {
 	// Summary is a concise description of the task.
 	Summary string
-}
-
-type taskCreateDTO struct {
-	Summary string `json:"summary"`
-}
-
-func newTaskCreateFromDTO(dto *taskCreateDTO) *TaskCreate {
-	return &TaskCreate{
-		Summary: dto.Summary,
-	}
 }
 
 func newTaskCreateFromProto(proto *todopb.NewTask) *TaskCreate {
@@ -101,18 +57,6 @@ func newTaskCreateFromProto(proto *todopb.NewTask) *TaskCreate {
 type TaskUpdate struct {
 	Summary     *string
 	CompletedAt *time.Time
-}
-
-type taskUpdateDTO struct {
-	Summary     *string    `json:"summary,omitempty"`
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-}
-
-func newTaskUpdateFromDTO(dto taskUpdateDTO) *TaskUpdate {
-	return &TaskUpdate{
-		Summary:     dto.Summary,
-		CompletedAt: dto.CompletedAt,
-	}
 }
 
 func newTaskUpdateFromProto(proto *todopb.TaskUpdate, fields *fieldmaskpb.FieldMask) *TaskUpdate {
