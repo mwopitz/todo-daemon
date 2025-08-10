@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
+	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
 )
 
 // Task represents a single to-do item.
@@ -32,8 +32,8 @@ func (t *Task) toDTO() *taskDTO {
 	}
 }
 
-func (t *Task) toProto() *pb.Task {
-	return &pb.Task{
+func (t *Task) toProto() *todopb.Task {
+	return &todopb.Task{
 		Id:          t.ID,
 		Summary:     t.Summary,
 		CreatedAt:   timestamppb.New(t.CreatedAt),
@@ -50,8 +50,8 @@ func (ts Tasks) toDTOs() []taskDTO {
 	return dtos
 }
 
-func (ts Tasks) toProtos() []*pb.Task {
-	protos := make([]*pb.Task, len(ts))
+func (ts Tasks) toProtos() []*todopb.Task {
+	protos := make([]*todopb.Task, len(ts))
 	for i := range ts {
 		protos[i] = ts[i].toProto()
 	}
@@ -90,7 +90,7 @@ func newTaskCreateFromDTO(dto *taskCreateDTO) *TaskCreate {
 	}
 }
 
-func newTaskCreateFromProto(proto *pb.NewTask) *TaskCreate {
+func newTaskCreateFromProto(proto *todopb.NewTask) *TaskCreate {
 	return &TaskCreate{
 		Summary: proto.GetSummary(),
 	}
@@ -115,7 +115,7 @@ func newTaskUpdateFromDTO(dto taskUpdateDTO) *TaskUpdate {
 	}
 }
 
-func newTaskUpdateFromProto(proto *pb.TaskUpdate, fields *fieldmaskpb.FieldMask) *TaskUpdate {
+func newTaskUpdateFromProto(proto *todopb.TaskUpdate, fields *fieldmaskpb.FieldMask) *TaskUpdate {
 	u := &TaskUpdate{}
 	for _, path := range fields.GetPaths() {
 		switch path {

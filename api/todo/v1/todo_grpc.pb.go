@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: todo/v1/todo.proto
 
-package todov1
+package todo
 
 import (
 	context "context"

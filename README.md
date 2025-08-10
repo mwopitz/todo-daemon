@@ -69,7 +69,11 @@ with the server process.
 ## Compiling the gRPC components
 
 1. [Install the Buf CLI](https://buf.build/docs/cli/installation/#install-the-buf-cli).
-1. Execute the following command:
+1. Install the protoc plugins:
+   ```sh
+   go install tool
+   ```
+1. Generate the Go code:
    ```sh
    buf generate
    ```

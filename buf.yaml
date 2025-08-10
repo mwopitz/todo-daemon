@@ -1,7 +1,8 @@
-# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+# For details on buf.yaml configuration
+# See https://buf.build/docs/configuration/v2/buf-yaml
 version: v2
 modules:
-  - path: proto
+  - path: api
 lint:
   use:
     - STANDARD

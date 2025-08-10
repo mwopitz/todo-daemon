@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb "github.com/mwopitz/todo-daemon/internal/api/todo/v1"
+	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
 )
 
 // HTTPController handles requests to the REST API endpoints.
@@ -145,7 +145,7 @@ func (c *HTTPController) doDeleteTask(r *http.Request) *restError {
 
 // GRPCController handles requests to the gRPC API endpoints.
 type GRPCController struct {
-	pb.UnimplementedTodoServiceServer
+	todopb.UnimplementedTodoServiceServer
 	server ServerStatusProvider
 	tasks  TaskRepository
 }
@@ -159,7 +159,7 @@ func NewGRPCController(server ServerStatusProvider, tasks TaskRepository) *GRPCC
 }
 
 // Status handles gRPC requests to retrieve the server status.
-func (c *GRPCController) Status(ctx context.Context, _ *pb.StatusRequest) (*pb.StatusResponse, error) {
+func (c *GRPCController) Status(ctx context.Context, _ *todopb.StatusRequest) (*todopb.StatusResponse, error) {
 	if c.server == nil {
 		return nil, status.Errorf(codes.Internal, "no server status provided")
 	}
@@ -171,14 +171,17 @@ func (c *GRPCController) Status(ctx context.Context, _ *pb.StatusRequest) (*pb.S
 	if pid < 0 || pid > math.MaxUint32 {
 		return nil, status.Errorf(codes.Internal, "invalid server PID: %d", pid)
 	}
-	return &pb.StatusResponse{
+	return &todopb.StatusResponse{
 		Pid:        uint32(pid),
 		ApiBaseUrl: srv.APIBaseURL,
 	}, nil
 }
 
 // CreateTask handles gRPC requests to create a new task in the to-do list.
-func (c *GRPCController) CreateTask(ctx context.Context, req *pb.CreateTaskRequest) (*pb.CreateTaskResponse, error) {
+func (c *GRPCController) CreateTask(
+	ctx context.Context,
+	req *todopb.CreateTaskRequest,
+) (*todopb.CreateTaskResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
 	}
@@ -187,11 +190,11 @@ func (c *GRPCController) CreateTask(ctx context.Context, req *pb.CreateTaskReque
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot create task: %v", err)
 	}
-	return &pb.CreateTaskResponse{Task: created.toProto()}, nil
+	return &todopb.CreateTaskResponse{Task: created.toProto()}, nil
 }
 
 // ListTasks handles gRPC requests to retrieve tasks from the to-do list.
-func (c *GRPCController) ListTasks(ctx context.Context, _ *pb.ListTasksRequest) (*pb.ListTasksResponse, error) {
+func (c *GRPCController) ListTasks(ctx context.Context, _ *todopb.ListTasksRequest) (*todopb.ListTasksResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
 	}
@@ -199,11 +202,14 @@ func (c *GRPCController) ListTasks(ctx context.Context, _ *pb.ListTasksRequest) 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot retrieve tasks: %v", err)
 	}
-	return &pb.ListTasksResponse{Tasks: tasks.toProtos()}, nil
+	return &todopb.ListTasksResponse{Tasks: tasks.toProtos()}, nil
 }
 
 // UpdateTask handles gRPC requests to update a task in the to-do list.
-func (c *GRPCController) UpdateTask(ctx context.Context, req *pb.UpdateTaskRequest) (*pb.UpdateTaskResponse, error) {
+func (c *GRPCController) UpdateTask(
+	ctx context.Context,
+	req *todopb.UpdateTaskRequest,
+) (*todopb.UpdateTaskResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
 	}
@@ -216,11 +222,14 @@ func (c *GRPCController) UpdateTask(ctx context.Context, req *pb.UpdateTaskReque
 		}
 		return nil, status.Errorf(codes.Internal, "cannot update task '%s': %v", id, err)
 	}
-	return &pb.UpdateTaskResponse{Task: task.toProto()}, nil
+	return &todopb.UpdateTaskResponse{Task: task.toProto()}, nil
 }
 
 // DeleteTask handles gRPC requests to delete a task from the to-do list.
-func (c *GRPCController) DeleteTask(ctx context.Context, req *pb.DeleteTaskRequest) (*pb.DeleteTaskResponse, error) {
+func (c *GRPCController) DeleteTask(
+	ctx context.Context,
+	req *todopb.DeleteTaskRequest,
+) (*todopb.DeleteTaskResponse, error) {
 	if c.tasks == nil {
 		return nil, status.Errorf(codes.Internal, "no task repository provided")
 	}
@@ -231,5 +240,5 @@ func (c *GRPCController) DeleteTask(ctx context.Context, req *pb.DeleteTaskReque
 		}
 		return nil, status.Errorf(codes.Internal, "cannot delete task '%s': %v", id, err)
 	}
-	return &pb.DeleteTaskResponse{}, nil
+	return &todopb.DeleteTaskResponse{}, nil
 }
