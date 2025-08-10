@@ -30,6 +30,7 @@ func NewCommand(conf *config.Config) *cli.Command {
 			remove.NewCommand(conf),
 		},
 		CommandNotFound: func(_ context.Context, _ *cli.Command, name string) {
+			// revive:disable-next-line:unhandled-error
 			fmt.Fprintf(os.Stderr, "todo-daemon: invalid command: '%s'\n", name)
 		},
 	}

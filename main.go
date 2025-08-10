@@ -36,6 +36,7 @@ func main() {
 	}
 
 	if err != nil {
+		// revive:disable-next-line:unhandled-error
 		fmt.Fprintf(os.Stderr, "todo-daemon: %v\n", err)
 		os.Exit(1)
 	}
