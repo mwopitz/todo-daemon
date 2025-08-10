@@ -13,7 +13,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/mwopitz/todo-daemon/internal/cli/util"
+	clifmt "github.com/mwopitz/todo-daemon/internal/cli/fmt"
 	"github.com/mwopitz/todo-daemon/internal/client"
 	"github.com/mwopitz/todo-daemon/internal/config"
 )
@@ -57,7 +57,7 @@ func (e *Executor) Execute(ctx context.Context) error {
 		return fmt.Errorf("cannot retrieve tasks: %w", err)
 	}
 
-	return util.PrintTasks(os.Stdout, tasks)
+	return clifmt.PrintTasks(os.Stdout, tasks)
 }
 
 // NewCommand creates a new 'add' command with the specified configuration.

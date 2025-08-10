@@ -1,5 +1,5 @@
-// Package util provides utility functions for the To-do Daemon CLI.
-package util
+// Package fmt provides functions for formatting and printing CLI output.
+package fmt
 
 import (
 	"fmt"
