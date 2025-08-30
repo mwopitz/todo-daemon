@@ -11,8 +11,6 @@ import (
 	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
 )
 
-var errFullDisk = errors.New("write: no space left on device")
-
 type writerFunc func([]byte) (int, error)
 
 func (f writerFunc) Write(p []byte) (int, error) {
@@ -36,9 +34,10 @@ func TestPrintTasks(t *testing.T) {
 			CompletedAt: now,
 		},
 		{
-			Id:        "3",
-			Summary:   "baz",
-			CreatedAt: now,
+			Id:          "3",
+			Summary:     "baz",
+			CreatedAt:   now,
+			CompletedAt: &timestamppb.Timestamp{},
 		},
 	}
 	want := "#1 [✓] foo\n#2 [✓] bar\n#3 [ ] baz\n"
@@ -46,11 +45,12 @@ func TestPrintTasks(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got := buf.String(); got != want {
-		t.Errorf("got: %q; want: %q", got, want)
+		t.Errorf("want: %q; got: %q", want, got)
 	}
 }
 
 func TestPrintTasksToFullDisk(t *testing.T) {
+	errFullDisk := errors.New("write: no space left on device")
 	fullDisk := writerFunc(func(_ []byte) (int, error) {
 		return 0, errFullDisk
 	})
@@ -62,6 +62,6 @@ func TestPrintTasksToFullDisk(t *testing.T) {
 	}
 	want := errFullDisk
 	if got := PrintTasks(fullDisk, tasks); !errors.Is(got, want) {
-		t.Errorf("got: %v; want: %v", got, want)
+		t.Errorf("want: %v; got: %v", want, got)
 	}
 }

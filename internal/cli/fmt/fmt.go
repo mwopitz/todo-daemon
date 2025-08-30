@@ -4,7 +4,6 @@ package fmt
 import (
 	"fmt"
 	"io"
-	"log"
 	"time"
 
 	todopb "github.com/mwopitz/todo-daemon/api/todo/v1"
@@ -16,8 +15,7 @@ func PrintTasks(w io.Writer, tasks []*todopb.Task) error {
 	for _, t := range tasks {
 		status := ' '
 		completedAt := t.GetCompletedAt()
-		if completedAt.IsValid() && completedAt.AsTime().Before(now) {
-			log.Printf("%s is before %s", completedAt, now)
+		if completedAt.IsValid() && completedAt.AsTime().After(time.Unix(0, 0)) && completedAt.AsTime().Before(now) {
 			status = '✓'
 		}
 		if _, err := fmt.Fprintf(w, "#%s [%c] %s\n", t.GetId(), status, t.GetSummary()); err != nil {
