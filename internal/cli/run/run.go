@@ -45,18 +45,17 @@ func NewExecutor(cmd *cli.Command) (*Executor, error) {
 func (e *Executor) Execute(ctx context.Context) error {
 	unlock, err := e.lock()
 	if err != nil {
-		return fmt.Errorf("cannot acquire file lock: %w", err)
+		return fmt.Errorf("cannot start server: %w", err)
 	}
 	defer unlock()
 	slog.Info("acquired file lock", "path", e.Lock.Path())
 
-	err = os.MkdirAll(filepath.Dir(e.SockFile), 0o700)
-	if err != nil {
-		return fmt.Errorf("cannot create socket directory: %w", err)
+	if err := os.MkdirAll(filepath.Dir(e.SockFile), 0o700); err != nil {
+		return fmt.Errorf("cannot start server: %w", err)
 	}
-	err = os.Remove(e.SockFile)
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("cannot remove socket file: %w", err)
+
+	if err := os.Remove(e.SockFile); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("cannot start server: %w", err)
 	}
 
 	// Create the To-do Daemon server and run it in a separate goroutine, so we
