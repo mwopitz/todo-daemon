@@ -1,13 +1,10 @@
 # To-do Daemon
 
-This repository contains a proof of concept for a [daemon][daemon]-like service
-created with [Go][go] that provides both a [command-line interface][cli] (CLI)
-as well as a [REST][rest] API. It's designed to run user scoped (not as `root`)
-on a desktop client.
-
-The To-do Daemon doesn't do anything really useful; it just manages a super
-basic to-do list that contains tasks, which can be added, modified, or deleted
-via both the CLI and REST API.
+This repository is a toy project for creating a [daemon][daemon]-like service
+with [Go][go] that provides both a [command-line interface][cli] (CLI) as well
+as a [REST][rest] API. The To-do Daemon doesn't do anything really useful; it
+just manages a super basic to-do list that contains tasks, which can be added,
+modified, or deleted via both the CLI and REST API.
 
 On Linux, the To-do Daemon does not behave like a traditional
 [SysV daemon][sysv-daemon]; it doesn't call `fork` to detach itself from the
